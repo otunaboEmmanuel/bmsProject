@@ -1,22 +1,24 @@
 // Login Form Submission
 document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const username = document.getElementById('username').value;
+    const email = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
-    const response = await fetch('/api/auth/login', { //login route
+    const response = await fetch('http://localhost:8030/admin/login', { //login route
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }),
     });
 
 
     const data = await response.json();
+    console.log(data.role);
+    
     if (response.ok) {
-        localStorage.setItem('user', JSON.stringify(data.user)); // Save user data
-        window.location.href = data.user.role === 'admin' ? 'admin.html' : 'student.html';
+        localStorage.setItem('user', JSON.stringify(data.role)); // Save user data
+        window.location.href = data.role.toLowerCase() === 'admin' ? 'admin.html' : 'student.html';
     } else {
         alert(data.message);
     }
@@ -84,52 +86,80 @@ const openAddBookModal = () => {
 // Add Book Form Submission
 document.getElementById('addBookForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    // Get form values
     const title = document.getElementById('title').value;
     const author = document.getElementById('author').value;
     const price = document.getElementById('price').value;
     const level = document.getElementById('level').value;
-    const image = document.getElementById('image').value;
+    const availability = document.getElementById('availability').value; // Fixed ID
+    const fileInput = document.getElementById('image');
+    const attachments = fileInput.files[0]; // Correct way to get a file
+    console.log(attachments);
+    
 
-    const response = await fetch('/api/books', { //books route
-        method: 'POST',
-        headers: {
+    // Create FormData object
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('author', author);
+    formData.append('price', price);
+    formData.append('level', level);
+    formData.append('availability', availability);
+    if (attachments) {
+        formData.append('attachments', attachments); // Append file only if selected
+    }
 
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ title, author, price, level, image_url }),
-    });
+    try {
+        const response = await fetch('http://localhost:8030/book/add', {
+            method: 'POST',
+            body: formData, // Send FormData instead of JSON
+        });
 
-    const data = await response.json();
-    if (response.ok) {
-        alert('Book added successfully');
-        window.location.reload();
-    } else {
-        alert('Failed to add book');
+        const data = await response.json();
+        console.log(data);
+        
+        if (response.ok) {
+            alert('Book added successfully');
+            window.location.reload();
+        } else {
+            alert('Failed to add book');
+        }
+    } catch (error) {
+        console.error('Error adding book:', error);
+        alert('An error occurred while adding the book.');
     }
 });
 
 // Fetch and Display Books (Admin Dashboard)
 if (window.location.pathname.endsWith('admin-books.html')) {
     const fetchBooks = async () => {
-        const response = await fetch('/api/books'); //books route
+        const response = await fetch('http://localhost:8030/book/allBooks'); //books route
         const books = await response.json();
         const booksContainer = document.getElementById('books');
-        booksContainer.innerHTML = books.map(book => `
+
+        console.log(books);
+        
+
+        books.profile.forEach(book =>{
+            html = `
             <div class="col-md-4 mb-4">
                 <div class="card">
-                    <img src="${book.image}" class="card-img-top" alt="${book.title}">
+                    <img src="${book.filepath}" class="card-img-top" alt="${book.title}">
                     <div class="card-body">
                         <h5 class="card-title">${book.title}</h5>
                         <p class="card-text">${book.author}</p>
-                        <p class="card-text">$${book.price}</p>
+                        <p class="card-text">₦${book.price}</p>
 
-                        <p class="card-text">${book.level}</p>
+                        <p class="card-text">${book.level} LVL</p>
                         <button class="btn btn-warning" onclick="editBook('${book._id}')">Edit</button>
                         <button class="btn btn-danger" onclick="deleteBook('${book._id}')">Delete</button>
                     </div>
                 </div>
             </div>
-        `).join('');
+        `
+        booksContainer.insertAdjacentHTML('afterend',  html)
+        })
+
     };
 
     fetchBooks();
@@ -198,29 +228,43 @@ const deleteBook = async (bookId) => {
 // Fetch and Display Students (Admin Dashboard)
 if (window.location.pathname.endsWith('admin-students.html')) {
     const fetchStudents = async () => {
-        const response = await fetch('/api/students');
+        const response = await fetch('http://localhost:8030/students/allStudents');
         const students = await response.json();
-        const studentsContainer = document.getElementById('students');
-        studentsContainer.innerHTML = students.map(student => `
+        console.log(students.profile);
+
+        let studentsContainer = document.querySelector('.content')
+
+        students.profile.forEach(student =>{
+            html = `
             <div class="card mb-3">
                 <div class="card-body">
-                    <h5 class="card-title">${student.username}</h5>
+                    <h5 class="card-title">${student.userName}</h5>
                     <p class="card-text">${student.email}</p>
-                    <p class="card-text">Role: ${student.role}</p>
-                    <button class="btn btn-danger" onclick="deleteStudent('${student._id}')">Delete</button>
+                    <!--<p class="card-text">Role: ${student.role}</p>-->
+                    <button class="btn btn-danger delStud" onclick="deleteStudent('${student.userId}')">Delete</button>
                 </div>
             </div>
-        `).join('');
+        `
+        studentsContainer.insertAdjacentHTML('afterend',html)
+        })
+
+
     };
 
     fetchStudents();
 }
 
 // Delete Student
+// const deleteStud = document.querySelector('.delStud')
+// delStud?.addEventListener
 const deleteStudent = async (studentId) => {
     if (confirm('Are you sure you want to delete this student?')) {
-        const response = await fetch(`/api/students/${studentId}`, {
+        const response = await fetch(`http://localhost:8030/admin/deleted`, {
             method: 'DELETE',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ studentId }) // Sending ID in request body
         });
 
         if (response.ok) {
