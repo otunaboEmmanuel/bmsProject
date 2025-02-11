@@ -140,14 +140,14 @@ if (window.location.pathname.endsWith('admin-books.html')) {
             console.log("Books API Response:", books); // Log the response to check the structure
     
             // Check if books is an array
-            if (!Array.isArray(books)) {
-                console.error("Expected an array but got:", books);
+            if (!Array.isArray(books.profile)) {
+                console.error("Expected an array but got:", books.profile);
                 return; // Stop execution if it's not an array
             }
     
             const booksContainer = document.getElementById('books');
     
-            books.forEach((book) => {  
+            books.profile.forEach((book) => {  
                 const imageUrl = `http://localhost:8030/book/images/${book.bookId}`; 
     
                 const html = `
@@ -173,9 +173,11 @@ if (window.location.pathname.endsWith('admin-books.html')) {
         }
     };
     
-    fetchBooks(); 
-    
+    fetchBooks();
+
 }
+
+
 
 // Edit Book
 const editBook = async (bookId) => {
