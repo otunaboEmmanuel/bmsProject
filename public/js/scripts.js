@@ -133,36 +133,48 @@ document.getElementById('addBookForm')?.addEventListener('submit', async (e) => 
 // Fetch and Display Books (Admin Dashboard)
 if (window.location.pathname.endsWith('admin-books.html')) {
     const fetchBooks = async () => {
-        const response = await fetch('http://localhost:8030/book/allBooks'); //books route
-        const books = await response.json();
-        const booksContainer = document.getElementById('books');
-
-        console.log(books);
-        
-
-        books.profile.forEach(book =>{
-            html = `
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <img src="${book.filepath}" class="card-img-top" alt="${book.title}">
-                    <div class="card-body">
-                        <h5 class="card-title">${book.title}</h5>
-                        <p class="card-text">${book.author}</p>
-                        <p class="card-text">₦${book.price}</p>
-
-                        <p class="card-text">${book.level} LVL</p>
-                        <button class="btn btn-warning" onclick="editBook('${book._id}')">Edit</button>
-                        <button class="btn btn-danger" onclick="deleteBook('${book._id}')">Delete</button>
+        try {
+            const response = await fetch('http://localhost:8030/book/allBooks'); // Fetch all books
+            const books = await response.json(); 
+    
+            console.log("Books API Response:", books); // Log the response to check the structure
+    
+            // Check if books is an array
+            if (!Array.isArray(books)) {
+                console.error("Expected an array but got:", books);
+                return; // Stop execution if it's not an array
+            }
+    
+            const booksContainer = document.getElementById('books');
+    
+            books.forEach((book) => {  
+                const imageUrl = `http://localhost:8030/book/images/${book.bookId}`; 
+    
+                const html = `
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <img src="${imageUrl}" class="card-img-top" alt="${book.title}">
+                            <div class="card-body">
+                                <h5 class="card-title">${book.title}</h5>
+                                <p class="card-text">${book.author}</p>
+                                <p class="card-text">₦${book.price}</p>
+                                <p class="card-text">${book.level} LVL</p>
+                                <button class="btn btn-warning" onclick="editBook('${book.bookId}')">Edit</button>
+                                <button class="btn btn-danger" onclick="deleteBook('${book.bookId}')">Delete</button>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        `
-        booksContainer.insertAdjacentHTML('afterend',  html)
-        })
-
+                `;
+    
+                booksContainer.insertAdjacentHTML('beforeend', html);
+            });
+        } catch (error) {
+            console.error("Error fetching books:", error);
+        }
     };
-
-    fetchBooks();
+    
+    fetchBooks(); 
+    
 }
 
 // Edit Book
