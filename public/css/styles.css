@@ -94,7 +94,9 @@ body {
 }
 
 .card:hover {
-    transform: translateY(-5px);
+    /* transform: translateY(-5px); */
+    cursor: pointer;
+    box-shadow: 0px 0px 3px rgb(143, 143, 143);
 }
 
 .card img {

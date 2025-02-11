@@ -15,7 +15,7 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
 
     const data = await response.json();
     console.log(data.role);
-    
+
     if (response.ok) {
         localStorage.setItem('user', JSON.stringify(data.role)); // Save user data
         window.location.href = data.role.toLowerCase() === 'admin' ? 'admin.html' : 'student.html';
@@ -96,7 +96,7 @@ document.getElementById('addBookForm')?.addEventListener('submit', async (e) => 
     const fileInput = document.getElementById('image');
     const attachments = fileInput.files[0]; // Correct way to get a file
     console.log(attachments);
-    
+
 
     // Create FormData object
     const formData = new FormData();
@@ -117,7 +117,7 @@ document.getElementById('addBookForm')?.addEventListener('submit', async (e) => 
 
         const data = await response.json();
         console.log(data);
-        
+
         if (response.ok) {
             alert('Book added successfully');
             window.location.reload();
@@ -135,21 +135,21 @@ if (window.location.pathname.endsWith('admin-books.html')) {
     const fetchBooks = async () => {
         try {
             const response = await fetch('http://localhost:8030/book/allBooks'); // Fetch all books
-            const books = await response.json(); 
-    
+            const books = await response.json();
+
             console.log("Books API Response:", books); // Log the response to check the structure
-    
+
             // Check if books is an array
             if (!Array.isArray(books.profile)) {
                 console.error("Expected an array but got:", books.profile);
                 return; // Stop execution if it's not an array
             }
-    
+
             const booksContainer = document.getElementById('books');
-    
-            books.profile.forEach((book) => {  
-                const imageUrl = `http://localhost:8030/book/images/${book.bookId}`; 
-    
+
+            books.profile.forEach((book) => {
+                const imageUrl = `http://localhost:8030/book/images/${book.bookId}`;
+
                 const html = `
                     <div class="col-md-4 mb-4">
                         <div class="card">
@@ -165,68 +165,105 @@ if (window.location.pathname.endsWith('admin-books.html')) {
                         </div>
                     </div>
                 `;
-    
+
                 booksContainer.insertAdjacentHTML('beforeend', html);
             });
         } catch (error) {
             console.error("Error fetching books:", error);
         }
     };
-    
+
     fetchBooks();
 
 }
 
-
-
 // Edit Book
 const editBook = async (bookId) => {
-    const response = await fetch(`/api/books/${bookId}`); //books route
-    const book = await response.json();
+    try {
+        // Fetch the book details
+        const response = await fetch(`http://localhost:8030/book/find/${bookId}`);
+        const book = await response.json();
 
-    // Populate the edit modal with book data
-    document.getElementById('editTitle').value = book.title;
-    document.getElementById('editAuthor').value = book.author;
-    document.getElementById('editPrice').value = book.price;
-    document.getElementById('editLevel').value = book.level;
-    document.getElementById('editImageUrl').value = book.image_url;
-
-    // Open the edit modal
-    const modal = new bootstrap.Modal(document.getElementById('editBookModal'));
-    modal.show();
-
-    // Handle form submission
-    document.getElementById('editBookForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const title = document.getElementById('editTitle').value;
-        const author = document.getElementById('editAuthor').value;
-        const price = document.getElementById('editPrice').value;
-        const level = document.getElementById('editLevel').value;
-        const image = document.getElementById('editImage').value;
-
-
-        const updateResponse = await fetch(`/api/books/${bookId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ title, author, price, level, image }),
-        });
-
-
-        if (updateResponse.ok) {
-            alert('Book updated successfully');
-            window.location.reload();
-        } else {
-            alert('Failed to update book');
+        // Ensure modal element exists
+        const modalElement = document.getElementById('editBookModal');
+        if (!modalElement) {
+            console.error("Modal with ID 'editBookModal' not found.");
+            return;
         }
-    };
+
+        // Open the edit modal
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+
+        // Populate the edit modal with book data
+        document.getElementById('editTitle').value = book.title;
+        document.getElementById('editAuthor').value = book.author;
+        document.getElementById('editPrice').value = book.price;
+        document.getElementById('editLevel').value = book.level;
+        document.getElementById('editAvailability').value = book.availability;
+
+        // Handle existing image display (assuming there's an img tag)
+        const imagePreview = document.getElementById('editImagePreview');
+        if (imagePreview) {
+             const imageUrl = `http://localhost:8030/book/images/${bookId}`
+            imagePreview.src = `${imageUrl}`;
+            imagePreview.style.display = 'block';
+        }
+
+        // Handle form submission for editing the book
+        const form = document.getElementById('editBookForm');
+
+        // Remove previous event listeners to prevent multiple bindings
+        form.onsubmit = null;
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+
+            // Get updated values
+            const title = document.getElementById('editTitle').value;
+            const author = document.getElementById('editAuthor').value;
+            const price = document.getElementById('editPrice').value;
+            const level = document.getElementById('editLevel').value;
+            const availability = document.getElementById('editAvailability').value;
+            const fileInput = document.getElementById('editImageUrl');
+            const attachments = fileInput.files[0]; // Get the file object
+
+            // Create FormData object
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('author', author);
+            formData.append('price', price);
+            formData.append('level', level);
+            formData.append('availability', availability);
+            if (attachments) {
+                formData.append('image', attachments); // Append file only if selected
+            }
+            console.log(formData)
+            // Send the updated book data to the backend
+            const updateResponse = await fetch(`http://localhost:8030/book/update/${bookId}`, {
+                method: 'PUT',
+                body: formData, // Send FormData instead of JSON
+            });
+            
+            if (updateResponse.ok) {
+                alert('Book updated successfully');
+                modal.hide();  // Close modal after update
+                window.location.reload();
+            } else {
+                alert('Failed to update book');
+            }
+        };
+    } catch (error) {
+        console.error("Error fetching book data:", error);
+    }
 };
+
+
 
 // Delete Book
 const deleteBook = async (bookId) => {
     if (confirm('Are you sure you want to delete this book?')) {
-        const response = await fetch(`/api/books/${bookId}`, {
+        const response = await fetch(`http://localhost:8030/book/deleted/${bookId}`, {
             method: 'DELETE',
         });
 
@@ -248,7 +285,7 @@ if (window.location.pathname.endsWith('admin-students.html')) {
 
         let studentsContainer = document.querySelector('.content')
 
-        students.profile.forEach(student =>{
+        students.profile.forEach(student => {
             html = `
             <div class="card mb-3">
                 <div class="card-body">
@@ -259,7 +296,7 @@ if (window.location.pathname.endsWith('admin-students.html')) {
                 </div>
             </div>
         `
-        studentsContainer.insertAdjacentHTML('afterend',html)
+            studentsContainer.insertAdjacentHTML('afterend', html)
         })
 
 
