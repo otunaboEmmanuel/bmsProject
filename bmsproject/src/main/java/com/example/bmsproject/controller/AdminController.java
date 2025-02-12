@@ -72,13 +72,23 @@ public class AdminController {
             return new ResponseEntity<>(new Responses("99", "No students found"), HttpStatus.NOT_FOUND);
         }
     }
-    @DeleteMapping("/deleted")
-    public String delete(@RequestBody LoginDto loginDto){
-        Users users1=userRepository.findById(loginDto.getUserId()).orElse(null);
-        if (users1==null){
-            return "user doesn't exist";
-        }else
-            userRepository.deleteById(loginDto.getUserId());
-        return "successfully deleted";
+//    @DeleteMapping("/deleted")
+//    public String delete(@RequestBody LoginDto loginDto){
+//        Users users1=userRepository.findById(loginDto.getUserId()).orElse(null);
+//        if (users1==null){
+//            return "user doesn't exist";
+//        }else
+//            userRepository.deleteById(loginDto.getUserId());
+//        return "successfully deleted";
+//    }
+   @DeleteMapping("/deleteUser/{id}")
+      public ResponseEntity<?> deleteUser(@PathVariable Integer id){
+     Users users=userRepository.findById(id).orElse(null);
+    if (users==null){
+        return new ResponseEntity<>(new Responses("99", "USER DOESN'T EXIST"),HttpStatus.OK);
+    }else {
+        userRepository.deleteById(id);
+        return new ResponseEntity<>(new Responses("00", "SUCCESSFULLY DELETED"),HttpStatus.OK);
     }
+}
 }

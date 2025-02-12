@@ -96,5 +96,4 @@ public class UserController {
 //        return new ResponseEntity<>(new Response("00", "Success", studentProfiles), HttpStatus.OK);
 //    }
 
-
 }
