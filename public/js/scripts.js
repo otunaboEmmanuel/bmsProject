@@ -282,6 +282,50 @@ if (window.location.pathname.endsWith('student.html')) {
     fetchCart();
 }
 
+// Fetch and Display Orders (Admin Dashboard)
+const fetchOrders = async () => {
+    try {
+        const response = await fetch('/api/orders'); // Replace with your API endpoint
+        const orders = await response.json();
+
+        const ordersContainer = document.getElementById('orders');
+        if (orders.length === 0) {
+            ordersContainer.innerHTML = '<p>No orders found.</p>';
+            return;
+        }
+
+        ordersContainer.innerHTML = orders.map(order => `
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Order ID: ${order._id}</h5>
+                    <p class="card-text"><strong>Student:</strong> ${order.student.username}</p>
+                    <p class="card-text"><strong>Books:</strong></p>
+                    <ul>
+                        ${order.books.map(book => `
+                            <li>${book.title} (Quantity: ${book.quantity})</li>
+                        `).join('')}
+                    </ul>
+                    <p class="card-text"><strong>Total Price:</strong> $${order.totalPrice}</p>
+                    <p class="card-text"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        console.error('Error fetching orders:', err);
+        document.getElementById('orders').innerHTML = '<p>Failed to load orders.</p>';
+    }
+};
+
+// Call the function to fetch and display orders
+fetchOrders();
+
+
+
+
+
+
+
+
 // Remove from Cart
 const removeFromCart = async (cartItemId) => {
     const response = await fetch(`/api/cart/${cartItemId}`, {
