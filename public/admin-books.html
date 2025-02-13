@@ -63,8 +63,16 @@
                         <div class="mb-3">
                             <label for="image" class="form-label">Image</label>
                             <input type="file" class="form-control" id="image">
-
                         </div>
+                        <div class="mb-3">
+                            <label for="yesNoOption" class="form-label">Book Availability</label>
+                            <select class="form-select" id="availability" required>
+                                <!--<option value="" disabled selected>Select an option</option>-->
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                    
                         <button type="submit" class="btn btn-primary">Add Book</button>
                     </form>
                 </div>
