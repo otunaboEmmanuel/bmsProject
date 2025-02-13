@@ -282,7 +282,7 @@ if (window.location.pathname.endsWith('student.html')) {
     fetchCart();
 }
 
-// Fetch and Display Orders (Admin Dashboard)
+// Fetch and Display Orders (Admin Dashboard).
 const fetchOrders = async () => {
     try {
         const response = await fetch('/api/orders'); // Replace with your API endpoint
