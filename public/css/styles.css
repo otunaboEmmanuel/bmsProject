@@ -200,3 +200,29 @@ body {
         margin-left: 0;
     }
 }
+
+/* Orders Section */
+#orders .card {
+    margin-bottom: 20px;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#orders .card-title {
+    font-size: 20px;
+    color: #2c3e50;
+}
+
+#orders .card-text {
+    color: #666;
+}
+
+#orders ul {
+    list-style: none;
+    padding: 0;
+}
+
+#orders ul li {
+    margin: 5px 0;
+}

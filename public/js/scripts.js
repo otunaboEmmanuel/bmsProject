@@ -409,6 +409,57 @@ if (window.location.pathname.endsWith('student.html')) {
     fetchCart();
 }
 
+// Checkout Button
+document.getElementById('checkoutButton')?.addEventListener('click', async () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+        alert('Please log in to checkout');
+        return;
+    }
+
+    // Fetch the cart items
+    const cartResponse = await fetch(`/api/cart/${user._id}`);
+    const cart = await cartResponse.json();
+
+    if (cart.length === 0) {
+        alert('Your cart is empty');
+        return;
+    }
+
+    // Calculate total price
+    const totalPrice = cart.reduce((total, item) => total + item.book.price * item.quantity, 0);
+
+    // Create the order
+    const order = {
+        studentId: user._id,
+        books: cart.map(item => ({
+            bookId: item.book._id,
+            quantity: item.quantity,
+        })),
+        totalPrice,
+    };
+
+    // Send the order to the backend
+    const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(order),
+    });
+
+    if (response.ok) {
+        alert('Order placed successfully');
+        // Clear the cart
+        await fetch(`/api/cart/${user._id}`, {
+            method: 'DELETE',
+        });
+        window.location.reload(); // Refresh the page
+    } else {
+        alert('Failed to place order');
+    }
+});
+
 // Fetch and Display Orders (Admin Dashboard).
 const fetchOrders = async () => {
     try {
@@ -445,6 +496,51 @@ const fetchOrders = async () => {
 
 // Call the function to fetch and display orders
 fetchOrders();
+
+// Fetch and Display Order History
+const fetchOrderHistory = async () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+        alert('Please log in to view order history');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/orders/student/${user._id}`); // Replace with your API endpoint
+        const orders = await response.json();
+
+        const ordersContainer = document.getElementById('orders');
+        if (orders.length === 0) {
+            ordersContainer.innerHTML = '<p>No orders found.</p>';
+            return;
+        }
+
+        ordersContainer.innerHTML = orders.map(order => `
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Order ID: ${order._id}</h5>
+                    <p class="card-text"><strong>Books:</strong></p>
+                    <ul>
+                        ${order.books.map(book => `
+                            <li>${book.title} (Quantity: ${book.quantity})</li>
+                        `).join('')}
+                    </ul>
+                    <p class="card-text"><strong>Total Price:</strong> $${order.totalPrice}</p>
+                    <p class="card-text"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        console.error('Error fetching order history:', err);
+        document.getElementById('orders').innerHTML = '<p>Failed to load order history.</p>';
+    }
+};
+
+// Call the function to fetch and display order history
+if (window.location.pathname.endsWith('order-history.html')) {
+    fetchOrderHistory();
+}
 
 
 
