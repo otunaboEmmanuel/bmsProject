@@ -16,7 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -48,7 +47,7 @@ public class UserController {
             String encodedPassword = login.getPassword();
             Boolean isPwdRight = passwordEncoder.matches(password, encodedPassword);
             if (isPwdRight) {
-                return new ResponseEntity<>(new loginResponse("00", " Student Login success", login.getRole()), HttpStatus.OK);
+                return new ResponseEntity<>(new loginResponse("00", " Student Login success", login.getRole(), login.getId()), HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(new Responses("111", "password doesn't match"), HttpStatus.OK);
             }

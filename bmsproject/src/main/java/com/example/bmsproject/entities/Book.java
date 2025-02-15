@@ -17,9 +17,9 @@ public class Book {
     private Integer id;
     private String title;
     private String author;
-    private String price;
+    private double price;
     private String level;
-    private String quantity;
+    private Integer quantity;
     private String availability;
     private String filepath;
     private String name;

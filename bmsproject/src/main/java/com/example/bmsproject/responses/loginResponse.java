@@ -9,12 +9,7 @@ public class loginResponse {
     private String code;
     private String message;
     private String role;
-
-    public loginResponse(String code, String message, String role) {
-        this.code = code;
-        this.message = message;
-        this.role = role;
-    }
+    private Integer id;
 
     public String getCode() {
         return code;
@@ -38,6 +33,21 @@ public class loginResponse {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public loginResponse(String code, String message, String role, Integer id) {
+        this.code = code;
+        this.message = message;
+        this.role = role;
+        this.id = id;
     }
 
     public loginResponse() {

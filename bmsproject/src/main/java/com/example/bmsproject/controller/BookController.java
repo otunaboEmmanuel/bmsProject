@@ -51,9 +51,9 @@ public class BookController {
                                      Book books) throws IOException {
         books.setTitle(title);
         books.setAuthor(author);
-        books.setPrice(price);
+        books.setPrice(Double.parseDouble(price));
         books.setLevel(level);
-        books.setQuantity(quantity);
+        books.setQuantity(Integer.valueOf(quantity));
         books.setAvailability(availability);
         Map<String, String> uploadResponse=bookService.uploadImageToFileSystem(file,books);
         return ResponseEntity.status(HttpStatus.OK)
@@ -105,9 +105,9 @@ public class BookController {
             if (book1 != null) {
                 book1.setTitle(title);
                 book1.setAuthor(author);
-                book1.setPrice(price);
+                book1.setPrice(Double.parseDouble(price));
                 book1.setLevel(level);
-                book1.setQuantity(quantity);
+                book1.setQuantity(Integer.valueOf(quantity));
                 book1.setAvailability(availability);
                 if (file != null) {
                     String filePath = bookServiceImp.saveFileToStorage(file);
@@ -135,9 +135,9 @@ public class BookController {
             BookDetail bookDetail = new BookDetail();
             bookDetail.setBookId(book.getId());
             bookDetail.setTitle(book.getTitle());
-            bookDetail.setPrice(book.getPrice());
+            bookDetail.setPrice(String.valueOf(book.getPrice()));
             bookDetail.setLevel(book.getLevel());
-            bookDetail.setQuantity(book.getQuantity());
+            bookDetail.setQuantity(String.valueOf(book.getQuantity()));
             bookDetail.setAvailability(book.getAvailability());
             bookDetail.setAuthor(book.getAuthor());
             bookDetail.setFilepath(book.getFilepath());

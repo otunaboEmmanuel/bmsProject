@@ -21,12 +21,19 @@ public class Cart {
     @JoinColumn(name = "user_id",referencedColumnName = "id")
     private Users user;
 
+    @Column(nullable = false)
+    private Integer quantity = 0;
 
-    public Cart(Book book, Users user) {
+
+    public Cart(Book book, Users user, Integer quantity) {
         this.book = book;
         this.user = user;
+        this.quantity = (quantity != null) ? quantity : 0;
     }
 
     public Cart() {
     }
+
+
+
 }
