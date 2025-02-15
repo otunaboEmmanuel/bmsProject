@@ -582,3 +582,62 @@ mobileMenuButton.classList.add('mobile-menu-button');
 mobileMenuButton.onclick = toggleSidebar;
 
 document.querySelector('.header').prepend(mobileMenuButton);
+
+// Forgot Password Form Submission
+document.getElementById('forgotPasswordForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+
+    const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+        alert(data.message);
+        window.location.href = 'login.html';
+    } else {
+        alert(data.message);
+    }
+});
+
+// Reset Password Form Submission
+document.getElementById('resetPasswordForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const token = new URLSearchParams(window.location.search).get('token');
+
+    if (password !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+    }
+
+    const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token, password }),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+        alert(data.message);
+        window.location.href = 'login.html';
+    } else {
+        alert(data.message);
+    }
+});     
+
+// Add Event Listener for Mobile Menu
+const mobileMenuButton = document.createElement('button');
+mobileMenuButton.innerHTML = '☰';
+mobileMenuButton.classList.add('mobile-menu-button');
+mobileMenuButton.onclick = toggleSidebar;
+
+document.querySelector('.header').prepend(mobileMenuButton);    
