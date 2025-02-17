@@ -35,12 +35,13 @@ document.getElementById('registerForm')?.addEventListener('submit', async (e) =>
     const password = document.getElementById('password').value;
     const role = document.getElementById('role').value;
 
+
     const response = await fetch('http://localhost:8030/students/add', { //register route
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, email, password, role }),
+        body: JSON.stringify({ userName: username, email, password, role }),
     });
 
     const data = await response.json();
