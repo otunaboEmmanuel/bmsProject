@@ -1,5 +1,6 @@
 package com.example.bmsproject.service;
 
+import com.example.bmsproject.dto.BookOrderDto;
 import com.example.bmsproject.entities.*;
 import com.example.bmsproject.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,5 +62,13 @@ public class OrderService {
                 .orElseThrow(() -> new RuntimeException("Student not found"));
         return orderRepository.findByStudent(student);
     }
+//public List<BookOrderDto> getOrdersByStudent(Integer studentId) {
+//    Users student = userRepository.findById(studentId)
+//            .orElseThrow(() -> new RuntimeException("Student not found with ID: " + studentId));
+//
+//    return orderRepository.findByStudent(student).stream()
+//            .map(BookOrderDto::new)
+//            .collect(Collectors.toList());
+
 
 }

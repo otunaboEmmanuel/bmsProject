@@ -1,5 +1,8 @@
 package com.example.bmsproject.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,6 +22,7 @@ public class OrderItem {
 
     @ManyToOne
     @JoinColumn(name = "book_id", referencedColumnName = "id")
+    @JsonBackReference
     private Book book; // Book purchased
 
     private int quantity;
