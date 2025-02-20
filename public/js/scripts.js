@@ -104,10 +104,11 @@ if (window.location.pathname.endsWith('student.html')) {
 }
 
 // Add Book Modal (Admin Dashboard)
-const openAddBookModal = () => {
-    const modal = new bootstrap.Modal(document.getElementById('addBookModal'));
-    modal.show();
-};
+function openAddBookModal() {
+    // Using Bootstrap 5 modal method
+    var myModal = new bootstrap.Modal(document.getElementById('addBookModal'));
+    myModal.show();
+}
 
 // Add Book Form Submission
 document.getElementById('addBookForm')?.addEventListener('submit', async (e) => {
