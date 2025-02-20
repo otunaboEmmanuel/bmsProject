@@ -310,7 +310,7 @@ const deleteBook = async (bookId) => {
 };
 
 // Fetch and Display Students (Admin Dashboard)
-if (window.location.pathname.endsWith('admin-students.html')) {
+if (window.location.pathname.endsWith('admin-users.html')) {
     const fetchStudents = async () => {
         const response = await fetch('http://localhost:8030/students/allStudents');
         const students = await response.json();
