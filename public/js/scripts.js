@@ -16,7 +16,7 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
 
     const data = await response.json();
     //userId =data.id;
-    console.log(data.id);
+    console.log(data);
 
     if (response.ok) {
         localStorage.setItem('userId', JSON.stringify(data.id)); // Save user data
@@ -401,7 +401,8 @@ if (window.location.pathname.endsWith('student.html')) {
             <div class="card mb-3">
                 <div class="card-body">
                     <h5 class="card-title">${item.book.title}</h5>
-                    <p class="card-text">Quantity: ${item.book.quantity}</p>
+                    <p class="card-text">Price: ₦${item.book.price}</p>
+                    <p class="card-text">Quantity: ${item.quantity}</p>
                     <button class="btn btn-danger" onclick="removeFromCart('${item.id}')">Remove</button>
                 </div>
             </div>
@@ -414,13 +415,14 @@ if (window.location.pathname.endsWith('student.html')) {
 // Checkout Button
 document.getElementById('checkoutButton')?.addEventListener('click', async () => {
     const user = JSON.parse(localStorage.getItem('user'));
+    const userId = JSON.parse(localStorage.getItem('userId'));
     if (!user) {
         alert('Please log in to checkout');
         return;
     }
 
     // Fetch the cart items
-    const cartResponse = await fetch(`/api/cart/${user._id}`);
+    const cartResponse = await fetch(`http://localhost:8030/cart/getCartDetails/${userId}`);
     const cart = await cartResponse.json();
 
     if (cart.length === 0) {
@@ -429,33 +431,33 @@ document.getElementById('checkoutButton')?.addEventListener('click', async () =>
     }
 
     // Calculate total price
-    const totalPrice = cart.reduce((total, item) => total + item.book.price * item.quantity, 0);
+    //const totalPrice = cart.reduce((total, item) => total + item.book.price * item.quantity, 0);
 
     // Create the order
-    const order = {
-        studentId: user._id,
-        books: cart.map(item => ({
-            bookId: item.book._id,
-            quantity: item.quantity,
-        })),
-        totalPrice,
-    };
+    // const order = {
+    //     studentId: userId,
+    //     books: cart.map(item => ({
+    //         bookId: item.book._id,
+    //         quantity: item.quantity,
+    //     })),
+    //     totalPrice,
+    // };
 
     // Send the order to the backend
-    const response = await fetch('/api/orders', {
+    const response = await fetch(`http://localhost:8030/api/orders/checkout/${userId}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(order),
+        //body: JSON.stringify(userId),
     });
 
     if (response.ok) {
         alert('Order placed successfully');
         // Clear the cart
-        await fetch(`/api/cart/${user._id}`, {
-            method: 'DELETE',
-        });
+        // await fetch(`/api/cart/${user._id}`, {
+        //     method: 'DELETE',
+        // });
         window.location.reload(); // Refresh the page
     } else {
         alert('Failed to place order');
@@ -463,9 +465,10 @@ document.getElementById('checkoutButton')?.addEventListener('click', async () =>
 });
 
 // Fetch and Display Orders (Admin Dashboard).
+if (window.location.pathname.endsWith('admin.html')) {
 const fetchOrders = async () => {
     try {
-        const response = await fetch('/api/orders'); // Replace with your API endpoint
+        const response = await fetch('http://localhost:8030/api/orders/all'); // Replace with your API endpoint
         const orders = await response.json();
 
         const ordersContainer = document.getElementById('orders');
@@ -474,18 +477,21 @@ const fetchOrders = async () => {
             return;
         }
 
+        console.log(orders);
+        
+
         ordersContainer.innerHTML = orders.map(order => `
             <div class="card mb-3">
                 <div class="card-body">
-                    <h5 class="card-title">Order ID: ${order._id}</h5>
-                    <p class="card-text"><strong>Student:</strong> ${order.student.username}</p>
+                    <h5 class="card-title">Order ID: ${order.id}</h5>
+                    <p class="card-text"><strong>Student:</strong> ${order.username}</p>
                     <p class="card-text"><strong>Books:</strong></p>
                     <ul>
                         ${order.books.map(book => `
                             <li>${book.title} (Quantity: ${book.quantity})</li>
                         `).join('')}
                     </ul>
-                    <p class="card-text"><strong>Total Price:</strong> $${order.totalPrice}</p>
+                    <p class="card-text"><strong>Total Price:</strong> ₦${order.totalPrice}</p>
                     <p class="card-text"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
                 </div>
             </div>
@@ -498,10 +504,12 @@ const fetchOrders = async () => {
 
 // Call the function to fetch and display orders
 fetchOrders();
+}
 
 // Fetch and Display Order History
 const fetchOrderHistory = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
+    const userId = JSON.parse(localStorage.getItem('userId'));
     if (!user) {
         alert('Please log in to view order history');
         window.location.href = 'login.html';
@@ -509,7 +517,7 @@ const fetchOrderHistory = async () => {
     }
 
     try {
-        const response = await fetch(`/api/orders/student/${user._id}`); // Replace with your API endpoint
+        const response = await fetch(`http://localhost:8030/api/orders/${userId}`); // Replace with your API endpoint
         const orders = await response.json();
 
         const ordersContainer = document.getElementById('orders');
@@ -518,17 +526,20 @@ const fetchOrderHistory = async () => {
             return;
         }
 
+        console.log(orders);
+        
+
         ordersContainer.innerHTML = orders.map(order => `
             <div class="card mb-3">
                 <div class="card-body">
-                    <h5 class="card-title">Order ID: ${order._id}</h5>
+                    <h5 class="card-title">Order ID: ${order.id}</h5>
                     <p class="card-text"><strong>Books:</strong></p>
                     <ul>
                         ${order.books.map(book => `
                             <li>${book.title} (Quantity: ${book.quantity})</li>
                         `).join('')}
                     </ul>
-                    <p class="card-text"><strong>Total Price:</strong> $${order.totalPrice}</p>
+                    <p class="card-text"><strong>Total Price:</strong> ₦${order.totalPrice}</p>
                     <p class="card-text"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
                 </div>
             </div>
@@ -637,9 +648,9 @@ document.getElementById('resetPasswordForm')?.addEventListener('submit', async (
 });     
 
 // Add Event Listener for Mobile Menu
-const mobileMenuButton = document.createElement('button');
-mobileMenuButton.innerHTML = '☰';
-mobileMenuButton.classList.add('mobile-menu-button');
-mobileMenuButton.onclick = toggleSidebar;
+// const mobileMenuButton = document.createElement('button');
+// mobileMenuButton.innerHTML = '☰';
+// mobileMenuButton.classList.add('mobile-menu-button');
+// mobileMenuButton.onclick = toggleSidebar;
 
 document.querySelector('.header').prepend(mobileMenuButton);    
