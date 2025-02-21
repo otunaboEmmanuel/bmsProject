@@ -13,7 +13,6 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
         body: JSON.stringify({ email, password }),
     });
 
-
     const data = await response.json();
     //userId =data.id;
     console.log(data);
@@ -26,6 +25,7 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
         alert(data.message);
     }
 });
+
 
 // Registration Form Submission
 document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
@@ -52,6 +52,22 @@ document.getElementById('registerForm')?.addEventListener('submit', async (e) =>
         alert(data.message);
     }
 });
+
+// Display the logged-in user's username
+const displayUsername = () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user) {
+        document.getElementById('username').textContent = user.username;
+    } else {
+        // Redirect to login if no user is found
+        window.location.href = 'login.html';
+    }
+};
+
+// Call the function to display the username
+if (document.getElementById('username')) {
+    displayUsername();
+}
 
 // Fetch and Display Books (Student Dashboard)
 if (window.location.pathname.endsWith('student.html')) {
@@ -102,6 +118,17 @@ if (window.location.pathname.endsWith('student.html')) {
 
     fetchBooks();
 }
+
+// Logout Functionality
+const logout = () => {
+    localStorage.removeItem('user');
+    window.location.href = 'index.html';
+};
+
+// Add logout event listener to all logout links
+document.querySelectorAll('index.html').forEach(link => {
+    link.addEventListener('click', logout);
+});
 
 // Add Book Modal (Admin Dashboard)
 function openAddBookModal() {
@@ -310,7 +337,7 @@ const deleteBook = async (bookId) => {
 };
 
 // Fetch and Display Students (Admin Dashboard)
-if (window.location.pathname.endsWith('admin-users.html')) {
+if (window.location.pathname.endsWith('admin-students.html')) {
     const fetchStudents = async () => {
         const response = await fetch('http://localhost:8030/students/allStudents');
         const students = await response.json();
@@ -576,11 +603,6 @@ const removeFromCart = async (cartItemId) => {
     }
 };
 
-// Logout
-const logout = () => {
-    localStorage.removeItem('user');
-    window.location.href = 'index.html';
-};
 
 // Toggle Sidebar on Mobile
 const toggleSidebar = () => {
