@@ -676,4 +676,109 @@ document.getElementById('resetPasswordForm')?.addEventListener('submit', async (
 // mobileMenuButton.classList.add('mobile-menu-button');
 // mobileMenuButton.onclick = toggleSidebar;
 
+// Send Message to Admin (Student Dashboard)
+document.getElementById('messageForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const userId = JSON.parse(localStorage.getItem('userId'));
+    const message = document.getElementById('messageContent').value;
+
+    try {
+        const response = await fetch('http://localhost:8030/messages/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId,
+                message,
+                isAdminMessage: false
+            }),
+        });
+
+        if (response.ok) {
+            alert('Message sent successfully');
+            document.getElementById('messageContent').value = ''; // Clear the input
+            fetchMessages(); // Refresh messages
+        } else {
+            alert('Failed to send message');
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('Error sending message');
+    }
+});
+
+// Fetch Messages (For both Student and Admin)
+const fetchMessages = async () => {
+    const userId = JSON.parse(localStorage.getItem('userId'));
+    const userRole = JSON.parse(localStorage.getItem('user'));
+    const isAdmin = userRole.toLowerCase() === 'admin';
+    
+    try {
+        const endpoint = isAdmin 
+            ? 'http://localhost:8030/messages/all' // Admin sees all messages
+            : `http://localhost:8030/messages/${userId}`; // Students see their own messages
+        
+        const response = await fetch(endpoint);
+        const messages = await response.json();
+        
+        const messagesContainer = document.getElementById('messagesContainer');
+        messagesContainer.innerHTML = messages.map(msg => `
+            <div class="card mb-2 ${msg.isAdminMessage ? 'bg-light' : ''}">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">
+                        ${msg.isAdminMessage ? 'Admin' : msg.userName} - 
+                        ${new Date(msg.createdAt).toLocaleString()}
+                    </h6>
+                    <p class="card-text">${msg.message}</p>
+                    ${isAdmin && !msg.isAdminMessage ? `
+                        <div class="reply-form">
+                            <input type="text" class="form-control mb-2" placeholder="Type your reply..." id="reply-${msg._id}">
+                            <button class="btn btn-primary" onclick="replyToMessage('${msg._id}', '${msg.userId}')">Reply</button>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+    }
+};
+
+// Admin Reply to Message
+const replyToMessage = async (messageId, studentId) => {
+    const replyContent = document.getElementById(`reply-${messageId}`).value;
+    
+    try {
+        const response = await fetch('http://localhost:8030/messages/reply', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: studentId,
+                message: replyContent,
+                isAdminMessage: true
+            }),
+        });
+
+        if (response.ok) {
+            alert('Reply sent successfully');
+            document.getElementById(`reply-${messageId}`).value = '';
+            fetchMessages(); // Refresh messages
+        } else {
+            alert('Failed to send reply');
+        }
+    } catch (error) {
+        console.error('Error sending reply:', error);
+        alert('Error sending reply');
+    }
+};
+
+// Initialize messages if on relevant pages
+if (window.location.pathname.endsWith('student-chat.html') || 
+    window.location.pathname.endsWith('admin-chat.html')) {
+    fetchMessages();
+}
+
 

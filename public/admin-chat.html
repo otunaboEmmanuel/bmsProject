@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Admin Chat</title>
     <!-- Favicon -->
     <link href="img/favicon.ico" rel="icon">
 
@@ -74,10 +74,10 @@
                     <div class="navbar-nav w-100">
                         <div class="nav-item dropdown">
                         </div>
-                        <a href="admin.html" class="nav-item nav-link active">Home</a>
+                        <a href="admin.html" class="nav-item nav-link">Home</a>
                         <a href="admin-books.html" class="nav-item nav-link">Manage Books</a>
                         <a href="admin-users.html" class="nav-item nav-link">Manage Users</a>
-                        <a href="admin-chat.html" class="nav-item nav-link">Messages</a>
+                        <a href="admin-chat.html" class="nav-item nav-link active">Chat</a>
                         <a href="register-users.html" class="nav-item nav-link">Register Users</a>
                         <a href="index.html" class="nav-item nav-link">Log Out</a>
                     </div>
@@ -94,10 +94,10 @@
                     </button>
                     <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
                         <div class="navbar-nav py-0">
-                            <a href="admin.html" class="nav-item nav-link active">Home</a>
+                            <a href="admin.html" class="nav-item nav-link">Home</a>
                             <a href="admin-books.html" class="nav-item nav-link">Manage Books</a>
                             <a href="admin-students.html" class="nav-item nav-link">Manage Users</a>
-                            <a href="admin-chat.html" class="nav-item nav-link">Messages</a>
+                            <a href="admin-chat.html" class="nav-item nav-link active">Messages</a>
                             <a href="register-users.html" class="nav-item nav-link">Register Users</a>
                             
                             <a href="index.html" class="nav-item nav-link">Logout</a> 
@@ -115,7 +115,7 @@
     <div class="container-fluid page-header" style="margin-bottom: 90px;">
         <div class="container">
             <div class="d-flex flex-column justify-content-center" style="min-height: 300px">
-                <h3 class="display-4 text-white text-uppercase">Student Orders</h3>
+                <h3 class="display-4 text-white text-uppercase">Student Messages</h3>
                 <div class="d-inline-flex text-white">
                     <p class="m-0 text-uppercase"><a class="text-white" href="admin.html">Home</a></p>
                     <!-- <i class="fa fa-angle-double-right pt-1 px-3"></i>
@@ -126,20 +126,15 @@
     </div>
     <!-- Header End -->
 
-    <!-- Display orders -->
-     <div class="container">
-        <div class="main-content">
-            <div class="content">
-                <div class="row mt-4">
-                    <div class="col-md-12">
-                        
-                        <div id="orders"></div>
-                    </div>
-                </div>
+    <div class="container-fluid">
+        <div class="message-section">
+            
+            <div id="messagesContainer">
+                <!-- Messages will be displayed here -->
             </div>
         </div>
-     </div>
-   
+    </div>
+    
 
     <!-- footer -->
     <footer class="my-5 pt-5 text-body-secondary text-center text-small">
