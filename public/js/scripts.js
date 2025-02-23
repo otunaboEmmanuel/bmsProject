@@ -2,7 +2,7 @@
 // Login Form Submission
 document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
 
     const response = await fetch('http://localhost:8030/students/login', { //login route
@@ -20,6 +20,7 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     if (response.ok) {
         localStorage.setItem('userId', JSON.stringify(data.id)); // Save user data
         localStorage.setItem('user', JSON.stringify(data.role)); // Save user data
+        localStorage.setItem('username', data.userName); // Store username
         window.location.href = data.role.toLowerCase() === 'admin' ? 'admin.html' : 'student.html';
     } else {
         alert(data.message);
@@ -616,7 +617,7 @@ mobileMenuButton.innerHTML = '☰';
 mobileMenuButton.classList.add('mobile-menu-button');
 mobileMenuButton.onclick = toggleSidebar;
 
-document.querySelector('.header').prepend(mobileMenuButton);
+
 
 // Forgot Password Form Submission
 document.getElementById('forgotPasswordForm')?.addEventListener('submit', async (e) => {
@@ -675,4 +676,4 @@ document.getElementById('resetPasswordForm')?.addEventListener('submit', async (
 // mobileMenuButton.classList.add('mobile-menu-button');
 // mobileMenuButton.onclick = toggleSidebar;
 
-document.querySelector('.header').prepend(mobileMenuButton);    
+
