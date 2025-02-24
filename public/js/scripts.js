@@ -58,7 +58,7 @@ document.getElementById('registerForm')?.addEventListener('submit', async (e) =>
 const displayUsername = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (user) {
-        document.getElementById('username').textContent = user.username;
+        document.getElementById('username').textContent = user.userName;
     } else {
         // Redirect to login if no user is found
         window.location.href = 'login.html';
