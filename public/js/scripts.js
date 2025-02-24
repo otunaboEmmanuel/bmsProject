@@ -58,7 +58,7 @@ document.getElementById('registerForm')?.addEventListener('submit', async (e) =>
 const displayUsername = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (user) {
-        document.getElementById('username').textContent = user.username;
+        document.getElementById('username').textContent = user.userName;
     } else {
         // Redirect to login if no user is found
         window.location.href = 'login.html';
@@ -728,7 +728,7 @@ const fetchMessages = async () => {
                 <div class="card-body">
                     <h6 class="card-subtitle mb-2 text-muted">
                         ${msg.isAdminMessage ? 'Admin' : msg.userName} - 
-                        ${new Date(msg.createdAt).toLocaleString()}
+                        ${new Date(msg.timestamp).toLocaleString()}
                     </h6>
                     <p class="card-text">${msg.message}</p>
                     ${isAdmin && !msg.isAdminMessage ? `
