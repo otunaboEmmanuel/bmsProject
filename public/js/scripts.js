@@ -5,7 +5,7 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
 
-    const response = await fetch('http://localhost:8030/students/login', { //login route
+    const response = await fetch('http://localhost:8030/students/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -14,13 +14,21 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     });
 
     const data = await response.json();
-    //userId =data.id;
-    console.log(data);
+    console.log('Login response:', data);
 
     if (response.ok) {
-        localStorage.setItem('userId', JSON.stringify(data.id)); // Save user data
-        localStorage.setItem('user', JSON.stringify(data.role)); // Save user data
-        localStorage.setItem('username', data.userName); // Store username
+        // Store user ID and role
+        localStorage.setItem('userId', JSON.stringify(data.id));
+        localStorage.setItem('user', JSON.stringify(data.role));
+        
+        // Fetch user details to get username
+        const userResponse = await fetch(`http://localhost:8030/students/find/${data.id}`);
+        const userData = await userResponse.json();
+        console.log('User data:', userData);
+        
+        // Store username
+        localStorage.setItem('username', userData.userName);
+        
         window.location.href = data.role.toLowerCase() === 'admin' ? 'admin.html' : 'student.html';
     } else {
         alert(data.message);
