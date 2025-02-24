@@ -56,11 +56,11 @@ document.getElementById('registerForm')?.addEventListener('submit', async (e) =>
 
 // Display the logged-in user's username
 const displayUsername = () => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (user) {
-        document.getElementById('username').textContent = user.userName;
+    const username = localStorage.getItem('username');
+    if (username) {
+        document.getElementById('username').textContent = username;
     } else {
-        // Redirect to login if no user is found
+        // Redirect to login if no username is found
         window.location.href = 'login.html';
     }
 };
@@ -72,9 +72,8 @@ if (document.getElementById('username')) {
 
 // Fetch and Display Books (Student Dashboard)
 if (window.location.pathname.endsWith('student.html')) {
-    const user = JSON.parse(localStorage.getItem('user'));
-    document.getElementById('username').textContent = user.username;
-    //console.log(userId);
+    const username = localStorage.getItem('username');
+    document.getElementById('username').textContent = username;
     
     const fetchBooks = async () => {
         try {
