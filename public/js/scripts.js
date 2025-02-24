@@ -727,7 +727,7 @@ const fetchMessages = async () => {
                 <div class="card-body">
                     <h6 class="card-subtitle mb-2 text-muted">
                         ${msg.isAdminMessage ? 'Admin' : msg.userName} - 
-                        ${new Date(msg.createdAt).toLocaleString()}
+                        ${new Date(msg.timestamp).toLocaleString()}
                     </h6>
                     <p class="card-text">${msg.message}</p>
                     ${isAdmin && !msg.isAdminMessage ? `
