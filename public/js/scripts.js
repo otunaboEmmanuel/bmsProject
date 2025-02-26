@@ -49,6 +49,7 @@ document.getElementById('registerForm')?.addEventListener('submit', async (e) =>
     if (response.ok) {
         alert(data.message);
         window.location.href = 'login.html';
+        localStorage.setItem('username', data.userName); // Store username
     } else {
         alert(data.message);
     }
@@ -58,17 +59,20 @@ document.getElementById('registerForm')?.addEventListener('submit', async (e) =>
 const displayUsername = () => {
     const username = localStorage.getItem('username');
     if (username) {
-        document.getElementById('username').textContent = username;
+        const usernameElement = document.getElementById('displayUsername');
+        if (usernameElement) {
+            usernameElement.textContent = username;
+        }
     } else {
         // Redirect to login if no username is found
         window.location.href = 'login.html';
     }
 };
 
-// Call the function to display the username
-if (document.getElementById('username')) {
+// Call the function when the page loads
+document.addEventListener('DOMContentLoaded', () => {
     displayUsername();
-}
+});
 
 // Fetch and Display Books (Student Dashboard)
 if (window.location.pathname.endsWith('student.html')) {
