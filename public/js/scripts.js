@@ -47,9 +47,9 @@ document.getElementById('registerForm')?.addEventListener('submit', async (e) =>
 
     const data = await response.json();
     if (response.ok) {
+        localStorage.setItem('username', data.userName); // Store username
         alert(data.message);
         window.location.href = 'login.html';
-        localStorage.setItem('username', data.userName); // Store username
     } else {
         alert(data.message);
     }
@@ -65,7 +65,7 @@ const displayUsername = () => {
         }
     } else {
         // Redirect to login if no username is found
-        window.location.href = 'login.html';
+        //window.location.href = 'login.html';
     }
 };
 
