@@ -104,7 +104,7 @@
 
 
     <!-- Header Start -->
-    <div class="container-fluid page-header" style="margin-bottom: 30px;">
+    <div class="container-fluid page-header" style="margin-bottom: 90px;">
         <div class="container">
             <div class="d-flex flex-column justify-content-center" style="min-height: 300px">
                 <h3 class="display-4 text-white text-uppercase">Available Books</h3>
@@ -117,43 +117,6 @@
         </div>
     </div>
     <!-- Header End -->
-
-    <!-- Search and Filter Section -->
-    <div class="container-fluid py-4">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-8">
-                    <div class="input-group mb-3">
-                        <input type="text" id="searchInput" class="form-control" placeholder="Search books by title, author, or course code...">
-                        <div class="input-group-append">
-                            <button class="btn btn-primary" type="button" onclick="searchBooks()">
-                                <i class="fa fa-search"></i> Search
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="d-flex">
-                        <select class="form-control mr-2" id="levelFilter">
-                            <option value="">All Levels</option>
-                            <option value="100">100 Level</option>
-                            <option value="200">200 Level</option>
-                            <option value="300">300 Level</option>
-                            <option value="400">400 Level</option>
-                        </select>
-                        <select class="form-control mr-2" id="semesterFilter">
-                            <option value="">All Semesters</option>
-                            <option value="1">First Semester</option>
-                            <option value="2">Second Semester</option>
-                        </select>
-                        <button class="btn btn-primary" onclick="resetFilters()">
-                            <i class="fa fa-refresh"></i> Reset
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Display Books -->
     <!-- Main Content -->
