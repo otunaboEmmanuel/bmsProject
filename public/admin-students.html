@@ -85,7 +85,7 @@
 
 
     <!-- Header Start -->
-    <div class="container-fluid page-header" style="margin-bottom: 90px;">
+    <div class="container-fluid page-header" style="margin-bottom: 30px;">
         <div class="container">
             <div class="d-flex flex-column justify-content-center" style="min-height: 300px">
                 <h3 class="display-4 text-white text-uppercase">Manage Users</h3>
@@ -98,6 +98,36 @@
         </div>
     </div>
     <!-- Header End -->
+
+    <!-- Search and Filter Section -->
+    <div class="container-fluid py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="input-group mb-3">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search users by name, email, or matric number...">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button" onclick="searchUsers()">
+                                <i class="fa fa-search"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="d-flex">
+                        <select class="form-control mr-2" id="roleFilter">
+                            <option value="">All Roles</option>
+                            <option value="student">Student</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="resetUserFilters()">
+                            <i class="fa fa-refresh"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Display Users -->
     <div class="container">

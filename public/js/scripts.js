@@ -347,23 +347,49 @@ if (window.location.pathname.endsWith('admin-students.html')) {
         const students = await response.json();
         console.log(students.profile);
 
-        let studentsContainer = document.querySelector('.content')
+        let studentsContainer = document.querySelector('.content');
+        
+        // Add search input event listener
+        document.getElementById('searchInput')?.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const role = document.getElementById('roleFilter').value.toLowerCase();
+            
+            // Clear container
+            studentsContainer.innerHTML = '';
+            
+            // Filter and display students
+            students.profile.filter(student => {
+                const matchesSearch = student.userName.toLowerCase().includes(searchTerm) || 
+                                    student.email.toLowerCase().includes(searchTerm);
+                const matchesRole = !role || student.role.toLowerCase() === role;
+                return matchesSearch && matchesRole;
+            }).forEach(student => {
+                html = `
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">${student.userName}</h5>
+                            <p class="card-text">${student.email}</p>
+                            <button class="btn btn-danger delStud" onclick="deleteStudent('${student.userId}')">Delete</button>
+                        </div>
+                    </div>
+                `;
+                studentsContainer.insertAdjacentHTML('afterend', html);
+            });
+        });
 
+        // Initial display of all students
         students.profile.forEach(student => {
             html = `
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">${student.userName}</h5>
-                    <p class="card-text">${student.email}</p>
-                    <!--<p class="card-text">Role: ${student.role}</p>-->
-                    <button class="btn btn-danger delStud" onclick="deleteStudent('${student.userId}')">Delete</button>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">${student.userName}</h5>
+                        <p class="card-text">${student.email}</p>
+                        <button class="btn btn-danger delStud" onclick="deleteStudent('${student.userId}')">Delete</button>
+                    </div>
                 </div>
-            </div>
-        `
-            studentsContainer.insertAdjacentHTML('afterend', html)
-        })
-
-
+            `;
+            studentsContainer.insertAdjacentHTML('afterend', html);
+        });
     };
 
     fetchStudents();
@@ -716,58 +742,67 @@ const fetchMessages = async () => {
     const userId = JSON.parse(localStorage.getItem('userId'));
     const userRole = JSON.parse(localStorage.getItem('user'));
     const isAdmin = userRole.toLowerCase() === 'admin';
+    const messagesContainer = document.getElementById('messages');
     
     try {
         const endpoint = isAdmin 
             ? 'http://localhost:8030/messages/all' // Admin sees all messages
             : `http://localhost:8030/messages/${userId}`; // Students see their own messages
-        
+
         const response = await fetch(endpoint);
         const messages = await response.json();
-        
-        const messagesContainer = document.getElementById('messagesContainer');
-        messagesContainer.innerHTML = messages.map(msg => `
-            <div class="card mb-2 ${msg.isAdminMessage ? 'bg-light' : ''}">
+
+        if (!messages || messages.length === 0) {
+            messagesContainer.innerHTML = '<p class="text-center">No messages found.</p>';
+            return;
+        }
+
+        messagesContainer.innerHTML = messages.map(message => `
+            <div class="card mb-3">
                 <div class="card-body">
                     <h6 class="card-subtitle mb-2 text-muted">
-                        ${msg.isAdminMessage ? 'Admin' : msg.userName} - 
-                        ${new Date(msg.timestamp).toLocaleString()}
+                        ${isAdmin ? `From: ${message.userName}` : 'Message'}
                     </h6>
-                    <p class="card-text">${msg.message}</p>
-                    ${isAdmin && !msg.isAdminMessage ? `
-                        <div class="reply-form">
-                            <input type="text" class="form-control mb-2" placeholder="Type your reply..." id="reply-${msg._id}">
-                            <button class="btn btn-primary" onclick="replyToMessage('${msg._id}', '${msg.userId}')">Reply</button>
+                    <p class="card-text">${message.message}</p>
+                    <small class="text-muted">
+                        ${new Date(message.createdAt).toLocaleString()}
+                    </small>
+                    ${isAdmin ? `
+                        <div class="mt-2">
+                            <button class="btn btn-primary btn-sm" onclick="replyToMessage('${message.userId}')">Reply</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteMessage('${message.id}')">Delete</button>
                         </div>
                     ` : ''}
                 </div>
             </div>
         `).join('');
+
     } catch (error) {
         console.error('Error fetching messages:', error);
+        messagesContainer.innerHTML = '<p class="text-center text-danger">Failed to load messages.</p>';
     }
 };
 
-// Admin Reply to Message
-const replyToMessage = async (messageId, studentId) => {
-    const replyContent = document.getElementById(`reply-${messageId}`).value;
-    
+// Reply to Message (Admin only)
+const replyToMessage = async (studentId) => {
+    const reply = prompt('Enter your reply:');
+    if (!reply) return;
+
     try {
-        const response = await fetch('http://localhost:8030/messages/reply', {
+        const response = await fetch('http://localhost:8030/messages/send', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 userId: studentId,
-                message: replyContent,
+                message: reply,
                 isAdminMessage: true
             }),
         });
 
         if (response.ok) {
             alert('Reply sent successfully');
-            document.getElementById(`reply-${messageId}`).value = '';
             fetchMessages(); // Refresh messages
         } else {
             alert('Failed to send reply');
@@ -778,10 +813,29 @@ const replyToMessage = async (messageId, studentId) => {
     }
 };
 
-// Initialize messages if on relevant pages
-if (window.location.pathname.endsWith('student-chat.html') || 
-    window.location.pathname.endsWith('admin-chat.html')) {
-    fetchMessages();
+// Delete Message (Admin only)
+const deleteMessage = async (messageId) => {
+    if (!confirm('Are you sure you want to delete this message?')) return;
+
+    try {
+        const response = await fetch(`http://localhost:8030/messages/delete/${messageId}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            alert('Message deleted successfully');
+            fetchMessages(); // Refresh messages
+        } else {
+            alert('Failed to delete message');
+        }
+    } catch (error) {
+        console.error('Error deleting message:', error);
+        alert('Error deleting message');
+    }
+};
+
+// Call fetchMessages when the page loads if we're on the messages page
+if (window.location.pathname.endsWith('messages.html') || 
+    window.location.pathname.endsWith('admin-messages.html')) {
+    document.addEventListener('DOMContentLoaded', fetchMessages);
 }
-
-
