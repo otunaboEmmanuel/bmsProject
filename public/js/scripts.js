@@ -75,16 +75,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Fetch and Display Books (Student Dashboard)
+
 if (window.location.pathname.endsWith('student.html')) {
-    const username = localStorage.getItem('username');
-    document.getElementById('username').textContent = username;
-    
     const fetchBooks = async () => {
         try {
             const response = await fetch('http://localhost:8030/book/allBooks'); // Fetch all books
             const books = await response.json();
 
-            //console.log("Books API Response:", books); // Log the response to check the structure
+            console.log("Books API Response:", books); // Log the response to check the structure
 
             // Check if books is an array
             if (!Array.isArray(books.profile)) {
@@ -107,7 +105,7 @@ if (window.location.pathname.endsWith('student.html')) {
                                 <p class="card-text">₦${book.price}</p>
                                 <p class="card-text">Quantity: ${book.quantity}</p>
                                 <p class="card-text">${book.level} LVL</p>
-                                <button class="btn btn-primary" onclick="addToCart('${book.bookId}')">Add to Cart</button>
+                                <button class="btn btn-primary" onclick="addToCart('${book.bookId}')">Add to Cart</button
                             </div>
                         </div>
                     </div>
@@ -121,6 +119,7 @@ if (window.location.pathname.endsWith('student.html')) {
     };
 
     fetchBooks();
+
 }
 
 // Logout Functionality
@@ -189,6 +188,8 @@ document.getElementById('addBookForm')?.addEventListener('submit', async (e) => 
         alert('An error occurred while adding the book.');
     }
 });
+
+
 
 // Fetch and Display Books (Admin Dashboard)
 if (window.location.pathname.endsWith('admin-books.html')) {
@@ -440,7 +441,7 @@ const addToCart = async (bookId) => {
 };
 
 // Fetch and Display Cart (Student Dashboard)
-if (window.location.pathname.endsWith('student.html')) {
+if (window.location.pathname.endsWith('cart.html')) {
     const fetchCart = async () => {
         const user = JSON.parse(localStorage.getItem('user'));
         const userId = JSON.parse(localStorage.getItem('userId'));
