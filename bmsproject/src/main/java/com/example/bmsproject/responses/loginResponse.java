@@ -10,6 +10,7 @@ public class loginResponse {
     private String message;
     private String role;
     private Integer id;
+    private String userName;
 
     public String getCode() {
         return code;
@@ -43,11 +44,20 @@ public class loginResponse {
         this.id = id;
     }
 
-    public loginResponse(String code, String message, String role, Integer id) {
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public loginResponse(String code, String message, String role, Integer id, String userName) {
         this.code = code;
         this.message = message;
         this.role = role;
         this.id = id;
+        this.userName = userName;
     }
 
     public loginResponse() {
