@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Books</title>
+    <title>Manage Users</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
@@ -43,28 +43,15 @@
     <div class="container-fluid">
         <div class="row border-top px-xl-5">
             <div class="col-lg-3 d-none d-lg-block">
-                <a class="d-flex align-items-center justify-content-between bg-secondary w-100 text-decoration-none" data-toggle="collapse" href="#navbar-vertical" style="height: 67px; padding: 0 30px;">
-                    <h1>Welcome, <span id="displayUsername"></span></h1>
-                    <i class="fa fa-angle-down text-primary"></i>
+                <a class="d-flex align-items-center justify-content-center w-100 text-decoration-none"  style="height: 67px; padding: 0 30px;">
+                    <h3>Babcock Bookstore</h3>
                 </a>
-                <nav class="collapse position-absolute navbar navbar-vertical navbar-light align-items-start p-0 border border-top-0 border-bottom-0 bg-light" id="navbar-vertical" style="width: calc(100% - 30px); z-index: 9;">
-                    <div class="navbar-nav w-100">
-                        <div class="nav-item dropdown">
-                        </div>
-                        <a href="admin.html" class="nav-item nav-link">Home</a>
-                        <a href="admin-books.html" class="nav-item nav-link active">Manage Books</a>
-                        <a href="admin-students.html" class="nav-item nav-link">Manage Users</a>
-                        <a href="admin-chat.html" class="nav-item nav-link">Messages</a>
-                        <a href="register-users.html" class="nav-item nav-link">Register Users</a>
-                        <a href="index.html" class="nav-item nav-link">Log Out</a>
-                    </div>
-                </nav>
             </div>
             <div class="col-lg-9">
                 <nav class="navbar navbar-expand-lg bg-light navbar-light py-3 py-lg-0 px-0">
                     <a href="" class="text-decoration-none d-block d-lg-none">
                         <h1 class="m-0"><span class="text-primary">Babcock</span> Bookstore</h1>
-                        <h1>Welcome, <span id="displayUsername"></span></h1>
+                       
                     </a>
                     <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
                         <span class="navbar-toggler-icon"></span>
@@ -72,31 +59,33 @@
                     <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
                         <div class="navbar-nav py-0">
                             <a href="admin.html" class="nav-item nav-link">Home</a>
-                            <a href="admin-books.html" class="nav-item nav-link active">Manage Books</a>
-                            <a href="admin-students.html" class="nav-item nav-link">Manage Users</a>
+                            <a href="admin-books.html" class="nav-item nav-link">Manage Books</a>
+                            <a href="admin-students.html" class="nav-item nav-link active">Manage Users</a>
                             <a href="admin-chat.html" class="nav-item nav-link">Messages</a>
                             <a href="register-users.html" class="nav-item nav-link">Register Users</a>
                             
                             <a href="index.html" class="nav-item nav-link">Logout</a> 
+                            
                         </div>
-                        <a class="btn btn-primary py-2 px-4 ml-auto d-none d-lg-block" href="index.html">Log Out</a>
+                        <h4>Hi, <span id="displayUsername"></span></h4>
                     </div>
                 </nav>
             </div>
         </div>
     </div>
-    <!-- Navbar End -->
+
+<!-- Navbar End -->
 
 
     <!-- Header Start -->
     <div class="container-fluid page-header" style="margin-bottom: 90px;">
         <div class="container">
             <div class="d-flex flex-column justify-content-center" style="min-height: 300px">
-                <h3 class="display-4 text-white text-uppercase">Manage Books</h3>
+                <h3 class="display-4 text-white text-uppercase">Manage Users</h3>
                 <div class="d-inline-flex text-white">
                     <p class="m-0 text-uppercase"><a class="text-white" href="admin.html">Home</a></p>
                     <i class="fa fa-angle-double-right pt-1 px-3"></i>
-                    <p class="m-0 text-uppercase">Manage Books</p> 
+                    <p class="m-0 text-uppercase">Manage Users</p> 
                 </div>
             </div>
         </div>
@@ -107,116 +96,12 @@
         <!-- Main Content -->
         <div class="main-content">
             <div class="content">
-                <button class="btn btn-primary mb-3" onclick="openAddBookModal()">Add New Book</button>
-                
-                <div id="books" class="row"></div>
-            </div>
-        </div>
-    
-
-    <!-- Add Book Modal -->
-    <div class="modal fade" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addBookModalLabel">Add New Book</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addBookForm">
-                        <div class="mb-3">
-                            <label for="title" class="form-label">Title</label>
-                            <input type="text" class="form-control" id="title" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="author" class="form-label">Author</label>
-                            <input type="text" class="form-control" id="author" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="price" class="form-label">Price</label>
-                            <input type="number" class="form-control" id="price" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="quantity" class="form-label">Quantity</label>
-                            <input type="number" class="form-control" id="quantity" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="level" class="form-label">Level</label>
-                            <input type="text" class="form-control" id="level" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="image" class="form-label">Image</label>
-                            <input type="file" class="form-control" id="image">
-                        </div>
-                        <div class="mb-3">
-                            <label for="yesNoOption" class="form-label">Book Availability</label>
-                            <select class="form-select" id="availability" required>
-                                <!--<option value="" disabled selected>Select an option</option>-->
-                                <option value="yes">Yes</option>
-                                <option value="no">No</option>
-                            </select>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">Add Book</button>
-                    </form>
-                </div>
+                <div id="students"></div>
             </div>
         </div>
     </div>
 
-    <!-- Edit Book Modal -->
-    <!-- Edit Book Modal -->
-    <div class="modal fade" id="editBookModal" tabindex="-1" aria-labelledby="editBookModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editBookModalLabel">Edit Book</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editBookForm">
-                        <div class="mb-3">
-                            <label for="editTitle" class="form-label">Title</label>
-                            <input type="text" class="form-control" id="editTitle" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editAuthor" class="form-label">Author</label>
-                            <input type="text" class="form-control" id="editAuthor" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editPrice" class="form-label">Price</label>
-                            <input type="number" class="form-control" id="editPrice" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editQuantity" class="form-label">Quantity</label>
-                            <input type="number" class="form-control" id="editQuantity" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editLevel" class="form-label">Level</label>
-                            <input type="text" class="form-control" id="editLevel" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editImage" class="form-label">Current Image</label>
-                            <img id="editImagePreview" src="" alt="Book Image" class="img-fluid" style="display: none;">
-                        </div>
-                        <div class="mb-3">
-                            <label for="editImageUrl" class="form-label">Upload New Image</label>
-                            <input type="file" class="form-control" id="editImageUrl">
-                        </div>
-                        <div class="mb-3">
-                            <label for="editAvailability" class="form-label">Availability</label>
-                            <select class="form-control" id="editAvailability" required>
-                                <option value="available">Yes</option>
-                                <option value="unavailable">No</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Update Book</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    </div>
+   
 
     <!-- footer -->
     <footer class="my-5 pt-5 text-body-secondary text-center text-small">
