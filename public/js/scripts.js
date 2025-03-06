@@ -60,13 +60,14 @@ const displayUsername = () => {
     const username = localStorage.getItem('username');
     console.log(username)
     if (username) {
-        const usernameElement = document.getElementById('displayUsername');
-        if (usernameElement) {
-            usernameElement.textContent = username;
-        }
+        const displayElements = document.querySelectorAll('#displayUsername');
+        displayElements.forEach(element => {
+            element.textContent = username;
+        });
+    
     } else {
         // Redirect to login if no username is found
-        //window.location.href = 'login.html';
+        window.location.href = 'login.html';
     }
 };
 
@@ -76,7 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Fetch and Display Books (Student Dashboard)
-
 if (window.location.pathname.endsWith('student.html')) {
     const fetchBooks = async () => {
         try {
@@ -98,15 +98,16 @@ if (window.location.pathname.endsWith('student.html')) {
 
                 const html = `
                     <div class="col-md-4 mb-4">
-                        <div class="card">
+                        <div class="card" style="width: 18rem;">
                             <img src="${imageUrl}" class="card-img-top" alt="${book.title}">
                             <div class="card-body">
-                                <h5 class="card-title">${book.title}</h5>
+                                <div class="card-text"><h5 class="card-title">${book.title}</h5></div>
+                                
                                 <p class="card-text">${book.author}</p>
                                 <p class="card-text">₦${book.price}</p>
                                 <p class="card-text">Quantity: ${book.quantity}</p>
                                 <p class="card-text">${book.level} LVL</p>
-                                <button class="btn btn-primary" onclick="addToCart('${book.bookId}')">Add to Cart</button
+                                <button class="btn btn-primary" onclick="addToCart('${book.bookId}')">Add to Cart</button>
                             </div>
                         </div>
                     </div>
@@ -190,8 +191,6 @@ document.getElementById('addBookForm')?.addEventListener('submit', async (e) => 
     }
 });
 
-
-
 // Fetch and Display Books (Admin Dashboard)
 if (window.location.pathname.endsWith('admin-books.html')) {
     const fetchBooks = async () => {
@@ -214,7 +213,7 @@ if (window.location.pathname.endsWith('admin-books.html')) {
 
                 const html = `
                     <div class="col-md-4 mb-4">
-                        <div class="card">
+                        <div class="card" style="width: 18rem;">
                             <img src="${imageUrl}" class="card-img-top" alt="${book.title}">
                             <div class="card-body">
                                 <h5 class="card-title">${book.title}</h5>
@@ -431,6 +430,7 @@ if (window.location.pathname.endsWith('cart.html')) {
         
         const cartContainer = document.getElementById('cart');
         cartContainer.innerHTML = cart.map(item => `
+            <div class="col-md-6 mb-6">
             <div class="card mb-3">
                 <div class="card-body">
                     <h5 class="card-title">${item.book.title}</h5>
@@ -438,6 +438,7 @@ if (window.location.pathname.endsWith('cart.html')) {
                     <p class="card-text">Quantity: ${item.quantity}</p>
                     <button class="btn btn-danger" onclick="removeFromCart('${item.id}')">Remove</button>
                 </div>
+            </div>
             </div>
         `).join('');
     };
@@ -514,20 +515,39 @@ const fetchOrders = async () => {
         
 
         ordersContainer.innerHTML = orders.map(order => `
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">Order ID: ${order.id}</h5>
-                    <p class="card-text"><strong>Student:</strong> ${order.username}</p>
-                    <p class="card-text"><strong>Books:</strong></p>
-                    <ul>
-                        ${order.books.map(book => `
-                            <li>${book.title} (Quantity: ${book.quantity})</li>
-                        `).join('')}
-                    </ul>
-                    <p class="card-text"><strong>Total Price:</strong> ₦${order.totalPrice}</p>
-                    <p class="card-text"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
-                </div>
-            </div>
+            
+        <div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">Order ID: ${order.id}</h5>
+        <p class="card-text"><strong>Student:</strong> ${order.username}</p>
+        
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Book Title</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${order.books.map(book => `
+                        <tr>
+                            <td>${book.title}</td>
+                            <td>${book.quantity}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+
+        <p class="card-text"><strong>Total Price:</strong> <span class="fw-bold text-success">₦${order.totalPrice}</span></p>
+        <p class="card-text"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+    </div>
+</div>
+
+    
+
+
         `).join('');
     } catch (err) {
         console.error('Error fetching orders:', err);
@@ -785,3 +805,21 @@ if (window.location.pathname.endsWith('student-chat.html') ||
     window.location.pathname.endsWith('admin-chat.html')) {
     fetchMessages();
 }
+
+
+    function searchBooks() {
+        let input = document.getElementById("searchBar").value.toLowerCase();
+        let books = document.querySelectorAll("#books .col-md-4");
+
+        books.forEach(book => {
+            let title = book.querySelector(".card-title").textContent.toLowerCase();
+            if (title.includes(input)) {
+                book.style.display = "block"; // Show if it matches
+            } else {
+                book.style.display = "none"; // Hide if it doesn't match
+            }
+        });
+    }
+
+    
+
