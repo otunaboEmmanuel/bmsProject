@@ -479,6 +479,7 @@ if (window.location.pathname.endsWith('cart.html')) {
             cartContainer.innerHTML = cart.map(item => {
                 const itemTotal = item.book.price * item.quantity;
                 total += itemTotal;
+                
                 return `
                 
                     <div class="col-12 mb-3">
@@ -893,7 +894,7 @@ document.getElementById('messageForm')?.addEventListener('submit', async (e) => 
         });
 
         if (response.ok) {
-            alert('Message sent successfully');
+            //alert('Message sent successfully');
             document.getElementById('messageContent').value = ''; // Clear the input
             fetchMessages(); // Refresh messages
         } else {
