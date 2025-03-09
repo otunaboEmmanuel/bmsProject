@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Babcock Bookstore</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .account-info {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .total-amount {
+            background-color: #e8f5e9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .price-display {
+            font-size: 32px;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+        .price-label {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .payment-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .cancel-btn {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Payment Details</h1>
+    
+    <div class="total-amount">
+        <div class="price-label">Total Amount to Pay:</div>
+        <div class="price-display">₦<span id="cartTotal">Loading...</span></div>
+    </div>
+
+    <div class="account-info">
+        <h2>Babcock Bookstore Account Information</h2>
+        <p>Bank: First Bank</p>
+        <p>Account Number: 1234567890</p>
+        <p>Account Name: Babcock University Bookstore</p>
+    </div>
+
+    <p>Please make your payment to the account above and click "I Have Made Payment" when done.</p>
+
+    <div class="button-container">
+        <button class="cancel-btn" onclick="redirectToDashboard()">Cancel Payment</button>
+        <button class="payment-btn" onclick="confirmPayment()">I Have Made Payment</button>
+    </div>
+
+    <script>
+        async function fetchCartTotal() {
+            const userId = JSON.parse(localStorage.getItem('userId'));
+            try {
+                const response = await fetch(`http://localhost:8030/cart/getCartDetails/${userId}`);
+                const cart = await response.json();
+                
+                // Calculate total
+                const total = cart.reduce((sum, item) => sum + (item.book.price * item.quantity), 0);
+                
+                // Display total with 2 decimal places
+                document.getElementById('cartTotal').textContent = total.toFixed(2);
+            } catch (error) {
+                console.error('Error fetching cart total:', error);
+                document.getElementById('cartTotal').textContent = 'Error loading total';
+            }
+        }
+
+        function redirectToDashboard() {
+            window.location.href = 'student.html';
+        }
+
+        async function confirmPayment() {
+            const userId = JSON.parse(localStorage.getItem('userId'));
+            try {
+                const response = await fetch(`http://localhost:8030/api/orders/checkout/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    alert('Payment confirmed! Your order has been placed.');
+                    window.location.href = 'student.html';
+                } else {
+                    alert('There was an error confirming your payment. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error confirming payment:', error);
+                alert('There was an error processing your payment. Please try again.');
+            }
+        }
+
+        // Fetch cart total when page loads
+        document.addEventListener('DOMContentLoaded', fetchCartTotal);
+    </script>
+</body>
+</html>

@@ -414,10 +414,12 @@ const addToCart = async (bookId) => {
 };
 
 // Fetch and Display Cart (Student Dashboard)
+
 if (window.location.pathname.endsWith('cart.html')) {
     const fetchCart = async () => {
         const user = JSON.parse(localStorage.getItem('user'));
         const userId = JSON.parse(localStorage.getItem('userId'));
+        
         if (!user) {
             alert('Please log in to view your cart');
             return;
@@ -428,18 +430,57 @@ if (window.location.pathname.endsWith('cart.html')) {
         console.log(cart);
         
         const cartContainer = document.getElementById('cart');
-        cartContainer.innerHTML = cart.map(item => `
-            <div class="col-md-6 mb-6">
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">${item.book.title}</h5>
-                    <p class="card-text">Price: ₦${item.book.price}</p>
-                    <p class="card-text">Quantity: ${item.quantity}</p>
-                    <button class="btn btn-danger" onclick="removeFromCart('${item.id}')">Remove</button>
+        let total = 0;
+
+        if (cart.length === 0) {
+            cartContainer.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <h5 class="text-muted">Your cart is empty</h5>
+                    <a href="student.html" class="btn btn-primary mt-3">Continue Shopping</a>
                 </div>
-            </div>
-            </div>
-        `).join('');
+            `;
+        } else {
+            cartContainer.innerHTML = cart.map(item => {
+                const itemTotal = item.book.price * item.quantity;
+                total += itemTotal;
+                return `
+                
+                    <div class="col-12 mb-3">
+                        <div class="card border-0">
+                            <div class="row g-0">
+                                <div class="col-md-2">
+                                    <img src="http://localhost:8030/book/images/${item.book.bookId}" 
+                                        class="img-fluid rounded-start" 
+                                        alt="${item.book.title}"
+                                        style="object-fit: cover; height: 100px;">
+                                </div>
+                                <div class="col-md-7">
+                                    <div class="card-body">
+                                        <h5 class="card-title">${item.book.title}</h5>
+                                        <p class="card-text mb-0">Price: ₦${item.book.price.toFixed(2)}</p>
+                                        <p class="card-text">Quantity: ${item.quantity}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card-body text-end">
+                                        <h5 class="text-primary mb-3">₦${itemTotal.toFixed(2)}</h5>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                            onclick="removeFromCart('${item.id}')">
+                                            <i class="fas fa-trash"></i> Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Update the summary section
+        document.getElementById('subtotal').textContent = `₦${total.toFixed(2)}`;
+        document.getElementById('total').textContent = `₦${total.toFixed(2)}`;
     };
 
     fetchCart();
@@ -492,6 +533,7 @@ document.getElementById('checkoutButton')?.addEventListener('click', async () =>
         //     method: 'DELETE',
         // });
         window.location.reload(); // Refresh the page
+        window.location.href = 'checkout.html';
     } else {
         alert('Failed to place order');
     }
@@ -501,7 +543,7 @@ document.getElementById('checkoutButton')?.addEventListener('click', async () =>
 if (window.location.pathname.endsWith('admin.html')) {
 const fetchOrders = async () => {
     try {
-        const response = await fetch('http://localhost:8030/api/orders/all'); // Replace with your API endpoint
+        const response = await fetch('http://localhost:8030/api/orders/all');
         const orders = await response.json();
 
         const ordersContainer = document.getElementById('orders');
@@ -510,47 +552,72 @@ const fetchOrders = async () => {
             return;
         }
 
-        console.log(orders);
-        
-
         ordersContainer.innerHTML = orders.map(order => `
-            
-        <div class="card mb-3">
-    <div class="card-body">
-        <h5 class="card-title">Order ID: ${order.id}</h5>
-        <p class="card-text"><strong>Student:</strong> ${order.username}</p>
-        
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Book Title</th>
-                        <th>Quantity</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${order.books.map(book => `
-                        <tr>
-                            <td>${book.title}</td>
-                            <td>${book.quantity}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
+        <div class="card mb-3 ${order.status === 'approved' ? 'border-success' : order.status === 'denied' ? 'border-danger' : ''}">
+            <div class="card-body">
+                <h5 class="card-title">Order ID: ${order.id}</h5>
+                <p class="card-text"><strong>Student:</strong> ${order.username}</p>
+                
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Book Title</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${order.books.map(book => `
+                                <tr>
+                                    <td>${book.title}</td>
+                                    <td>${book.quantity}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="card-text"><strong>Total Price:</strong> <span class="fw-bold text-success">₦${order.totalPrice}</span></p>
+                <p class="card-text"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+                
+                ${order.status ? 
+                    `<div class="alert ${order.status === 'approved' ? 'alert-success' : 'alert-danger'} mt-2">
+                        Status: ${order.status.toUpperCase()}
+                    </div>` :
+                    `<div class="mt-3">
+                        <button class="btn btn-success me-2" onclick="updateOrderStatus('${order.id}', 'approved')">Approve</button>
+                        <button class="btn btn-danger" onclick="updateOrderStatus('${order.id}', 'denied')">Deny</button>
+                    </div>`
+                }
+            </div>
         </div>
-
-        <p class="card-text"><strong>Total Price:</strong> <span class="fw-bold text-success">₦${order.totalPrice}</span></p>
-        <p class="card-text"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
-    </div>
-</div>
-
-    
-
-
         `).join('');
     } catch (err) {
         console.error('Error fetching orders:', err);
         document.getElementById('orders').innerHTML = '<p>Failed to load orders.</p>';
+    }
+};
+
+// Add new function to handle order status updates
+const updateOrderStatus = async (orderId, status) => {
+    try {
+        const response = await fetch(`http://localhost:8030/api/orders/status/${orderId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status })
+        });
+
+        if (response.ok) {
+            alert(`Order ${status} successfully`);
+            fetchOrders(); // Refresh the orders list
+        } else {
+            alert('Failed to update order status');
+        }
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        alert('Error updating order status');
     }
 };
 
@@ -820,5 +887,31 @@ if (window.location.pathname.endsWith('student-chat.html') ||
         });
     }
 
-    
+// Function to update the dashboard statistics
+function updateDashboardStats() {
+    // Get references to the count elements
+    const orderCountElement = document.getElementById('orderCount');
+    const userCountElement = document.getElementById('userCount');
+    const bookCountElement = document.getElementById('bookCount');
+
+    // Fetch the counts from your database/backend
+    // Replace these with actual API calls to your backend
+    fetch('/api/orders/count')
+        .then(response => response.json())
+        .then(data => orderCountElement.textContent = data.count)
+        .catch(error => console.error('Error fetching order count:', error));
+
+    fetch('/api/users/count')
+        .then(response => response.json())
+        .then(data => userCountElement.textContent = data.count)
+        .catch(error => console.error('Error fetching user count:', error));
+
+    fetch('/api/books/count')
+        .then(response => response.json())
+        .then(data => bookCountElement.textContent = data.count)
+        .catch(error => console.error('Error fetching book count:', error));
+}
+
+// Call the function when the page loads
+document.addEventListener('DOMContentLoaded', updateDashboardStats);
 

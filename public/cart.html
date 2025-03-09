@@ -92,7 +92,7 @@
     <!-- Header Start -->
     <div class="container-fluid page-header">
         <div class="container">
-            <div class="d-flex flex-column justify-content-center" style="min-height: 300px">
+            <div class="d-flex flex-column justify-content-center" style="min-height: 200px">
                 <h3 class="display-4 text-white text-uppercase">Cart</h3>
                 <div class="d-inline-flex text-white">
                     <p class="m-0 text-uppercase"><a class="text-white" href="student.html">Home</a></p>
@@ -105,15 +105,39 @@
     <!-- Header End -->
 
     <!-- Cart -->
-     <div class="container">
-        <button id="checkoutButton" class="btn btn-primary mt-3">Checkout</button>
-     </div>
-    <div class="container">
-        
-        <br>
-        <div class="col-md-6">
-            <div id="cart" class="row"></div>
-            
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h4 class="mb-0">Cart</h4>
+                    </div>
+                    <div class="card-body">
+                        <div id="cart" class="row"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <h4 class="mb-0">Order Summary</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Subtotal</span>
+                            <span id="subtotal">₦0.00</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Total</strong>
+                            <strong id="total" class="text-primary">₦0.00</strong>
+                        </div>
+                        <button id="checkoutButton" class="btn btn-primary w-100">
+                            Proceed to Checkout
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     

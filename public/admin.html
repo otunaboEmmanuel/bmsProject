@@ -102,7 +102,7 @@
     <!-- Header Start -->
     <div class="container-fluid page-header" style="margin-bottom: 90px;">
         <div class="container">
-            <div class="d-flex flex-column justify-content-center" style="min-height: 300px">
+            <div class="d-flex flex-column justify-content-center" style="min-height: 200px">
                 <h3 class="display-4 text-white text-uppercase">Student Orders</h3>
                 <div class="d-inline-flex text-white">
                     <p class="m-0 text-uppercase"><a class="text-white" href="admin.html">Home</a></p>
@@ -113,6 +113,48 @@
         </div>
     </div>
     <!-- Header End -->
+
+    <!-- Stats Cards Start -->
+    <div class="container-fluid py-2">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm mb-2">
+                        <div class="card-body text-center p-4">
+                            <h1 class="display-4 text-primary mb-3">
+                                <i class="fas fa-shopping-cart"></i>
+                            </h1>
+                            <h4 id="orderCount" class="display-5 mb-2">0</h4>
+                            <h5 class="text-muted mb-0">Total Orders</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm mb-2">
+                        <div class="card-body text-center p-4">
+                            <h1 class="display-4 text-primary mb-3">
+                                <i class="fas fa-users"></i>
+                            </h1>
+                            <h4 id="userCount" class="display-5 mb-2">0</h4>
+                            <h5 class="text-muted mb-0">Registered Users</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm mb-2">
+                        <div class="card-body text-center p-4">
+                            <h1 class="display-4 text-primary mb-3">
+                                <i class="fas fa-book"></i>
+                            </h1>
+                            <h4 id="bookCount" class="display-5 mb-2">0</h4>
+                            <h5 class="text-muted mb-0">Available Books</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Stats Cards End -->
 
     <!-- Display orders -->
      <div class="container">
