@@ -801,37 +801,38 @@ document.getElementById('messageForm')?.addEventListener('submit', async (e) => 
 });
 
 // Fetch Messages (For both Student and Admin)
-const fetchMessages = async () => {
-    const userId = JSON.parse(localStorage.getItem('userId'));
-    const userRole = JSON.parse(localStorage.getItem('user'));
-    const isAdmin = userRole.toLowerCase() === 'admin';
-    
+const fetchMessages = async (userId = null) => {
+    if (window.location.pathname.endsWith('admin-chat.html') && !userId) {
+        return;
+    }
+
     try {
-        const endpoint = isAdmin 
-            ? 'http://localhost:8030/messages/all' // Admin sees all messages
-            : `http://localhost:8030/messages/${userId}`; // Students see their own messages
+        const endpoint = userId 
+            ? `http://localhost:8030/messages/${userId}`
+            : `http://localhost:8030/messages/${JSON.parse(localStorage.getItem('userId'))}`;
         
         const response = await fetch(endpoint);
         const messages = await response.json();
         
         const messagesContainer = document.getElementById('messagesContainer');
-        messagesContainer.innerHTML = messages.map(msg => `
-            <div class="card mb-2 ${msg.isAdminMessage ? 'bg-light' : ''}">
-                <div class="card-body">
-                    <h6 class="card-subtitle mb-2 text-muted">
-                        ${msg.isAdminMessage ? 'Admin' : msg.userName} - 
-                        ${new Date(msg.timestamp).toLocaleString()}
-                    </h6>
-                    <p class="card-text">${msg.message}</p>
-                    ${isAdmin && !msg.isAdminMessage ? `
-                        <div class="reply-form">
-                            <input type="text" class="form-control mb-2" placeholder="Type your reply..." id="reply-${msg._id}">
-                            <button class="btn btn-primary" onclick="replyToMessage('${msg._id}', '${msg.userId}')">Reply</button>
-                        </div>
-                    ` : ''}
+        if (messagesContainer) {
+            messagesContainer.innerHTML = messages.map(msg => `
+                <div class="chat-message ${msg.isAdminMessage ? 'sent' : 'received'}">
+                    <div class="message-content">
+                        ${msg.message}
+                    </div>
+                    <div class="message-time">
+                        ${msg.isAdminMessage ? 'You' : msg.userName} • ${new Date(msg.timestamp).toLocaleString()}
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `).join('');
+
+            // Scroll to bottom
+            const chatContainer = document.getElementById('chat-container');
+            if (chatContainer) {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }
     } catch (error) {
         console.error('Error fetching messages:', error);
     }
@@ -915,4 +916,105 @@ function updateDashboardStats() {
 
 // Call the function when the page loads
 document.addEventListener('DOMContentLoaded', updateDashboardStats);
+
+let currentSelectedUser = null;
+
+const fetchChatList = async () => {
+    try {
+        const response = await fetch('http://localhost:8030/messages/all');
+        const messages = await response.json();
+        
+        // Group messages by user
+        const userMessages = {};
+        messages.forEach(msg => {
+            if (!msg.isAdminMessage) {
+                if (!userMessages[msg.userId]) {
+                    userMessages[msg.userId] = {
+                        userName: msg.userName,
+                        messages: [],
+                        lastMessage: msg.timestamp
+                    };
+                }
+                userMessages[msg.userId].messages.push(msg);
+                if (new Date(msg.timestamp) > new Date(userMessages[msg.userId].lastMessage)) {
+                    userMessages[msg.userId].lastMessage = msg.timestamp;
+                }
+            }
+        });
+
+        // Render chat list
+        const chatList = document.getElementById('chatList');
+        if (chatList) {
+            chatList.innerHTML = Object.entries(userMessages)
+                .sort((a, b) => new Date(b[1].lastMessage) - new Date(a[1].lastMessage))
+                .map(([userId, data]) => `
+                    <div class="chat-list-item list-group-item list-group-item-action ${currentSelectedUser === userId ? 'active' : ''}"
+                         onclick="selectChat('${userId}', '${data.userName}')">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="user-status ${data.messages.length > 0 ? 'status-online' : 'status-offline'}"></span>
+                                <strong>${data.userName}</strong>
+                            </div>
+                            ${data.messages.some(msg => !msg.read) ? 
+                                '<span class="unread-badge">New</span>' : ''}
+                        </div>
+                        <small class="text-muted">
+                            Last message: ${new Date(data.lastMessage).toLocaleString()}
+                        </small>
+                    </div>
+                `).join('');
+        }
+    } catch (error) {
+        console.error('Error fetching chat list:', error);
+    }
+};
+
+const selectChat = (userId, userName) => {
+    currentSelectedUser = userId;
+    document.getElementById('currentChatUser').textContent = userName;
+    fetchMessages(userId);
+    
+    // Update active state in chat list
+    document.querySelectorAll('.chat-list-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    event.currentTarget.classList.add('active');
+};
+
+// Add admin reply form handler
+document.getElementById('adminReplyForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!currentSelectedUser) {
+        alert('Please select a conversation first');
+        return;
+    }
+
+    const message = document.getElementById('replyMessage').value;
+    try {
+        const response = await fetch('http://localhost:8030/messages/reply', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: currentSelectedUser,
+                message,
+                isAdminMessage: true
+            }),
+        });
+
+        if (response.ok) {
+            document.getElementById('replyMessage').value = '';
+            fetchMessages(currentSelectedUser);
+        }
+    } catch (error) {
+        console.error('Error sending reply:', error);
+    }
+});
+
+// Initialize admin chat
+if (window.location.pathname.endsWith('admin-chat.html')) {
+    fetchChatList();
+    setInterval(fetchChatList, 5000); // Update chat list every 5 seconds
+}
 
