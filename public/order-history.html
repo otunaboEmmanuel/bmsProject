@@ -19,6 +19,141 @@
 
     <!-- Customized Bootstrap Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
+
+    <style>
+        .order-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .order-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .order-header {
+            background: linear-gradient(45deg, #4b7bec, #45aaf2);
+            color: white;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-body {
+            padding: 20px;
+            background: white;
+        }
+
+        .book-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .book-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+
+        .book-item:last-child {
+            border-bottom: none;
+        }
+
+        .book-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .book-quantity {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin-left: 10px;
+        }
+
+        .order-footer {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #eee;
+        }
+
+        .total-price {
+            font-size: 1.2rem;
+            color: #2ecc71;
+            font-weight: 600;
+        }
+
+        .order-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .order-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-denied {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .empty-orders {
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        }
+
+        .empty-orders i {
+            font-size: 3rem;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+
+        .stats-container {
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #4b7bec;
+        }
+    </style>
 </head>
 <body>
     <!-- <div class="dashboard-container">
@@ -98,12 +233,37 @@
     <!-- Header End -->
 
     <!-- Order History -->
-     <div class="container">
-        <div class="content">
-            <div id="orders"></div>
+     <div class="container py-5">
+        <!-- Stats Section -->
+        <div class="stats-container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <i class="fas fa-shopping-bag stat-icon"></i>
+                        <h3 id="totalOrders">0</h3>
+                        <p class="text-muted mb-0">Total Orders</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <i class="fas fa-book stat-icon"></i>
+                        <h3 id="totalBooks">0</h3>
+                        <p class="text-muted mb-0">Books Purchased</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <i class="fas fa-money-bill-wave stat-icon"></i>
+                        <h3 id="totalSpent">₦0</h3>
+                        <p class="text-muted mb-0">Total Spent</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
-     </div>
+        <!-- Orders Container -->
+        <div id="orders"></div>
+    </div>
     
 
     <!-- footer -->
@@ -126,5 +286,105 @@
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
     
+    <script>
+        // Update the fetchOrderHistory function to include the new HTML structure
+        const fetchOrderHistory = async () => {
+            const user = JSON.parse(localStorage.getItem('user'));
+            const userId = JSON.parse(localStorage.getItem('userId'));
+            if (!user) {
+                alert('Please log in to view order history');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:8030/api/orders/${userId}`);
+                const orders = await response.json();
+
+                const ordersContainer = document.getElementById('orders');
+                
+                // Update stats
+                let totalBooks = 0;
+                let totalSpent = 0;
+                
+                if (orders.length === 0) {
+                    ordersContainer.innerHTML = `
+                        <div class="empty-orders">
+                            <i class="fas fa-shopping-cart"></i>
+                            <h4>No Orders Yet</h4>
+                            <p class="text-muted">Your order history will appear here</p>
+                            <a href="student.html" class="btn btn-primary mt-3">Start Shopping</a>
+                        </div>`;
+                    return;
+                }
+
+                orders.forEach(order => {
+                    totalBooks += order.books.reduce((acc, book) => acc + book.quantity, 0);
+                    totalSpent += parseFloat(order.totalPrice);
+                });
+
+                // Update stats display
+                document.getElementById('totalOrders').textContent = orders.length;
+                document.getElementById('totalBooks').textContent = totalBooks;
+                document.getElementById('totalSpent').textContent = `₦${totalSpent.toLocaleString()}`;
+
+                ordersContainer.innerHTML = orders.map(order => `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span>Order #${order.id}</span>
+                            <span class="order-status ${getStatusClass(order.status)}">
+                                ${order.status || 'Processing'}
+                            </span>
+                        </div>
+                        <div class="order-body">
+                            <ul class="book-list">
+                                ${order.books.map(book => `
+                                    <li class="book-item">
+                                        <span>${book.title}</span>
+                                        <span class="book-quantity">×${book.quantity}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                        <div class="order-footer">
+                            <div class="order-date">
+                                <i class="far fa-calendar-alt me-2"></i>
+                                ${new Date(order.createdAt).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                })}
+                            </div>
+                            <div class="total-price">₦${parseFloat(order.totalPrice).toLocaleString()}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Error fetching order history:', err);
+                document.getElementById('orders').innerHTML = `
+                    <div class="empty-orders">
+                        <i class="fas fa-exclamation-circle text-danger"></i>
+                        <h4>Error Loading Orders</h4>
+                        <p class="text-muted">Please try again later</p>
+                    </div>`;
+            }
+        };
+
+        function getStatusClass(status) {
+            if (!status) return 'status-pending';
+            switch(status.toLowerCase()) {
+                case 'approved': return 'status-approved';
+                case 'denied': return 'status-denied';
+                default: return 'status-pending';
+            }
+        }
+
+        // Call the function when the page loads
+        if (window.location.pathname.endsWith('order-history.html')) {
+            fetchOrderHistory();
+        }
+    </script>
 </body>
 </html>
