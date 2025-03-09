@@ -444,13 +444,14 @@ if (window.location.pathname.endsWith('cart.html')) {
             cartContainer.innerHTML = cart.map(item => {
                 const itemTotal = item.book.price * item.quantity;
                 total += itemTotal;
+                
                 return `
                 
                     <div class="col-12 mb-3">
                         <div class="card border-0">
                             <div class="row g-0">
                                 <div class="col-md-2">
-                                    <img src="http://localhost:8030/book/images/${item.book.bookId}" 
+                                    <img src="http://localhost:8030/book/images/${item.book.id}" 
                                         class="img-fluid rounded-start" 
                                         alt="${item.book.title}"
                                         style="object-fit: cover; height: 100px;">
@@ -788,7 +789,7 @@ document.getElementById('messageForm')?.addEventListener('submit', async (e) => 
         });
 
         if (response.ok) {
-            alert('Message sent successfully');
+            //alert('Message sent successfully');
             document.getElementById('messageContent').value = ''; // Clear the input
             fetchMessages(); // Refresh messages
         } else {
