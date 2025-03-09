@@ -19,6 +19,106 @@
 
     <!-- Customized Bootstrap Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
+
+    <style>
+        .chat-message {
+            max-width: 75%;
+            margin-bottom: 1rem;
+        }
+    
+        .chat-message.sent {
+            align-self: flex-end;
+        }
+    
+        .chat-message.received {
+            align-self: flex-start;
+        }
+    
+        .message-content {
+            padding: 0.75rem 1rem;
+            border-radius: 15px;
+            position: relative;
+        }
+    
+        .sent .message-content {
+            background-color: #007bff;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+    
+        .received .message-content {
+            background-color: #e9ecef;
+            color: #212529;
+            border-bottom-left-radius: 5px;
+        }
+    
+        .message-time {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+
+        .sent .message-time {
+        text-align: right;
+    }
+
+    .chat-list-item {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+    }
+
+    .chat-list-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .chat-list-item.active {
+        background-color: #e9ecef;
+        border-left-color: #007bff;
+    }
+
+    .unread-badge {
+        background-color: #007bff;
+        color: white;
+        border-radius: 50%;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .user-status {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+    }
+
+    .status-online {
+        background-color: #28a745;
+    }
+
+    .status-offline {
+        background-color: #dc3545;
+    }
+
+    #chat-container::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    #chat-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    #chat-container::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 5px;
+    }
+
+    #chat-container::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+</style>
+
 </head>
 <body>
     <!-- <div class="dashboard-container">
@@ -100,9 +200,9 @@
 <!-- Navbar End -->
 
     <!-- Header Start -->
-    <div class="container-fluid page-header" style="margin-bottom: 90px;">
+    <div class="container-fluid page-header" style="margin-bottom: 10px;">
         <div class="container">
-            <div class="d-flex flex-column justify-content-center" style="min-height: 300px">
+            <div class="d-flex flex-column justify-content-center" style="min-height: 200px">
                 <h3 class="display-4 text-white text-uppercase">Student Messages</h3>
                 <div class="d-inline-flex text-white">
                     <p class="m-0 text-uppercase"><a class="text-white" href="admin.html">Home</a></p>
@@ -113,19 +213,65 @@
         </div>
     </div>
     <!-- Header End -->
-    <div class="container">
-        <div class="container-fluid">
-            <div class="message-section">
-                
-                <div id="messagesContainer">
-                    <!-- Messages will be displayed here -->
+
+    
+    <!-- Chat Section -->
+<div class="container py-5">
+    <div class="row">
+        <!-- Chat List Sidebar -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        Student Conversations
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div id="chatList" class="list-group list-group-flush">
+                        <!-- Chat list will be populated here -->
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- Chat Messages -->
+        <div class="col-md-8">
+            <div class="card shadow h-100">
+                <div class="card-header bg-primary text-white py-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-comment-dots me-2"></i>
+                        <h5 class="mb-0" id="currentChatUser">Select a conversation</h5>
+                    </div>
+                </div>
+                <div class="card-body bg-light" style="height: 500px; overflow-y: auto;" id="chat-container">
+                    <div id="messagesContainer" class="d-flex flex-column gap-3">
+                        <!-- Messages will be displayed here -->
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <form id="adminReplyForm" class="mb-0">
+                        <div class="input-group">
+                            <textarea id="replyMessage" class="form-control" 
+                                placeholder="Type your reply..." 
+                                rows="1" 
+                                style="resize: none;"
+                            ></textarea>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-   
-    
+</div>
+</div>
+</div>
+
+
+        
 
     <!-- footer -->
     <footer class="my-5 pt-5 text-body-secondary text-center text-small">

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Babcock Bookstore</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .account-info {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .payment-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .cancel-btn {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Payment Details</h1>
+    
+    <div class="account-info">
+        <h2>Babcock Bookstore Account Information</h2>
+        <p>Bank: First Bank</p>
+        <p>Account Number: 1234567890</p>
+        <p>Account Name: Babcock University Bookstore</p>
+    </div>
+
+    <p>Please make your payment to the account above and click "I Have Made Payment" when done.</p>
+
+    <div class="button-container">
+        <button class="cancel-btn" onclick="redirectToDashboard()">Cancel Payment</button>
+        <button class="payment-btn" onclick="redirectToDashboard()">I Have Made Payment</button>
+    </div>
+
+    <script>
+        function redirectToDashboard() {
+            // Replace '/dashboard' with your actual dashboard URL
+            window.location.href = 'student.html';
+        }
+    </script>
+</body>
+</html>
