@@ -58,6 +58,7 @@ document.getElementById('registerForm')?.addEventListener('submit', async (e) =>
 // Display the logged-in user's username
 const displayUsername = () => {
     const username = localStorage.getItem('username');
+    console.log(username)
     if (username) {
         const displayElements = document.querySelectorAll('#displayUsername');
         displayElements.forEach(element => {

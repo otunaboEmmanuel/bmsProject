@@ -4332,6 +4332,12 @@ input[type="button"].btn-block {
   justify-content: flex-start;
 }
 
+.navbar-welcome{
+padding: 10px;
+display: flex;
+gap:5
+}
+
 .navbar-expand > .container,
 .navbar-expand > .container-fluid, .navbar-expand > .container-sm, .navbar-expand > .container-md, .navbar-expand > .container-lg, .navbar-expand > .container-xl {
   padding-right: 0;
