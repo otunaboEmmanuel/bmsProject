@@ -4,10 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Users</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Manage Users - Admin Dashboard</title>
     <!-- Favicon -->
     <link href="img/favicon.ico" rel="icon">
 
@@ -23,6 +20,45 @@
 
     <!-- Customized Bootstrap Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
+    <!-- Add DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <style>
+        .stats-card {
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            transition: transform 0.2s;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        .user-table {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .table thead th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .action-buttons .btn {
+            margin: 0 5px;
+        }
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        .search-box {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+    </style>
 </head>
 
 <body>
@@ -46,7 +82,7 @@
                 <a class="d-flex align-items-center justify-content-center w-100 text-decoration-none"  style="height: 67px; padding: 0 30px;">
                     <h3>Babcock Bookstore</h3>
                 </a>
-<<<<<<< HEAD
+
                 <nav class="collapse position-absolute navbar navbar-vertical navbar-light align-items-start p-0 border border-top-0 border-bottom-0 bg-light" id="navbar-vertical" style="width: calc(100% - 30px); z-index: 9;">
                     <div class="navbar-nav w-100">
                         <div class="nav-item dropdown">
@@ -59,8 +95,6 @@
                         <a href="index.html" class="nav-item nav-link">Log Out</a>
                     </div>
                 </nav>
-=======
->>>>>>> 3fa2c69f7eaa148b433360372fe71f672aaec203
             </div>
             <div class="col-lg-9">
                 <nav class="navbar navbar-expand-lg bg-light navbar-light py-3 py-lg-0 px-0">
@@ -93,14 +127,14 @@
 
 
     <!-- Header Start -->
-    <div class="container-fluid page-header" style="margin-bottom: 90px;">
+    <div class="container-fluid page-header" style="margin-bottom: 20px;">
         <div class="container">
             <div class="d-flex flex-column justify-content-center" style="min-height: 200px">
-                <h3 class="display-4 text-white text-uppercase">Manage Users</h3>
+                <h3 class="display-4 text-white text-uppercase">User Management</h3>
                 <div class="d-inline-flex text-white">
                     <p class="m-0 text-uppercase"><a class="text-white" href="admin.html">Home</a></p>
                     <i class="fa fa-angle-double-right pt-1 px-3"></i>
-                    <p class="m-0 text-uppercase">Manage Users</p> 
+                    <p class="m-0 text-uppercase">Manage Users</p>
                 </div>
             </div>
         </div>
@@ -108,67 +142,47 @@
     <!-- Header End -->
 
     <div class="container">
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="content">
-<<<<<<< HEAD
-                <!-- <button class="btn btn-primary mb-3" onclick="openAddBookModal()">Add New Book</button> -->
-                
-                <div id="books" class="row"></div>
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="stats-card bg-primary text-white">
+                    <h5>Total Users</h5>
+                    <h2 id="totalUsers">0</h2>
+                    <p class="mb-0"><i class="fas fa-users"></i> Active Users</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card bg-success text-white">
+                    <h5>Active Today</h5>
+                    <h2 id="activeUsers">0</h2>
+                    <p class="mb-0"><i class="fas fa-user-check"></i> Online Users</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card bg-info text-white">
+                    <h5>New This Month</h5>
+                    <h2 id="newUsers">0</h2>
+                    <p class="mb-0"><i class="fas fa-user-plus"></i> Recent Registrations</p>
+                </div>
             </div>
         </div>
-    
 
-    <!-- Add Book Modal -->
-    <div class="modal fade" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addBookModalLabel">Add New Book</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addBookForm">
-                        <div class="mb-3">
-                            <label for="title" class="form-label">Title</label>
-                            <input type="text" class="form-control" id="title" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="author" class="form-label">Author</label>
-                            <input type="text" class="form-control" id="author" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="price" class="form-label">Price</label>
-                            <input type="number" class="form-control" id="price" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="quantity" class="form-label">Quantity</label>
-                            <input type="number" class="form-control" id="quantity" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="level" class="form-label">Level</label>
-                            <input type="text" class="form-control" id="level" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="image" class="form-label">Image</label>
-                            <input type="file" class="form-control" id="image">
-                        </div>
-                        <div class="mb-3">
-                            <label for="yesNoOption" class="form-label">Book Availability</label>
-                            <select class="form-select" id="availability" required>
-                                <!--<option value="" disabled selected>Select an option</option>-->
-                                <option value="yes">Yes</option>
-                                <option value="no">No</option>
-                            </select>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">Add Book</button>
-                    </form>
-                </div>
-=======
-                <div id="students"></div>
->>>>>>> 3fa2c69f7eaa148b433360372fe71f672aaec203
-            </div>
+        <!-- Users Table -->
+        <div class="user-table">
+            <table id="usersTable" class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="content">
+                    <!-- Table content will be dynamically populated -->
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -184,13 +198,26 @@
         </ul>
       </footer>
 
-
+    <!-- Add DataTables JS -->
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    
+    <!-- Update the fetchStudents function in scripts.js -->
     <script>
-    function openAddBookModal() {
-        // Using Bootstrap 5 modal method
-        var myModal = new bootstrap.Modal(document.getElementById('addBookModal'));
-        myModal.show();
-    }
+        // Initialize DataTable
+        $(document).ready(function() {
+            $('#usersTable').DataTable({
+                pageLength: 10,
+                order: [[1, 'asc']],
+                responsive: true
+            });
+        });
+
+        // Export function
+        function exportUserData() {
+            // Implement export functionality
+            alert('Exporting user data...');
+        }
     </script>
 
     <script src="js/scripts.js"></script>

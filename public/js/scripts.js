@@ -344,27 +344,62 @@ const deleteBook = async (bookId) => {
 // Fetch and Display Students (Admin Dashboard)
 if (window.location.pathname.endsWith('admin-students.html')) {
     const fetchStudents = async () => {
-        const response = await fetch('http://localhost:8030/students/allStudents');
-        const students = await response.json();
-        console.log(students.profile);
+        try {
+            const response = await fetch('http://localhost:8030/students/allStudents');
+            const students = await response.json();
+            console.log(students.profile);
 
-        let studentsContainer = document.querySelector('.content')
+            const tableBody = document.querySelector('#usersTable tbody');
+            tableBody.innerHTML = '';
 
-        students.profile.forEach(student => {
-            html = `
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">${student.userName}</h5>
-                    <p class="card-text">${student.email}</p>
-                    <!--<p class="card-text">Role: ${student.role}</p>-->
-                    <button class="btn btn-danger delStud" onclick="deleteStudent('${student.userId}')">Delete</button>
-                </div>
-            </div>
-        `
-            studentsContainer.insertAdjacentHTML('afterend', html)
-        })
+            students.profile.forEach(student => {
+                const html = `
+                    <tr>
+                        <td>${student.userId}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(student.userName)}&background=random" 
+                                     class="rounded-circle me-2" 
+                                     style="width: 32px; height: 32px;">
+                                ${student.userName}
+                            </div>
+                        </td>
+                        <td>${student.email}</td>
+                        <td>
+                            <span class="badge bg-success status-badge">Active</span>
+                        </td>
+                        <td class="action-buttons">
+                            <button class="btn btn-sm btn-info" onclick="viewUser('${student.userId}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-warning" onclick="editUser('${student.userId}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteStudent('${student.userId}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tableBody.insertAdjacentHTML('beforeend', html);
+            });
 
+            // Update statistics
+            document.getElementById('totalUsers').textContent = students.profile.length;
+            document.getElementById('activeUsers').textContent = Math.floor(Math.random() * students.profile.length); // Replace with actual active users count
+            document.getElementById('newUsers').textContent = Math.floor(students.profile.length * 0.3); // Replace with actual new users count
 
+            // Reinitialize DataTable
+            $('#usersTable').DataTable().destroy();
+            $('#usersTable').DataTable({
+                pageLength: 10,
+                order: [[1, 'asc']],
+                responsive: true
+            });
+
+        } catch (error) {
+            console.error('Error fetching students:', error);
+        }
     };
 
     fetchStudents();
@@ -450,7 +485,7 @@ if (window.location.pathname.endsWith('cart.html')) {
                         <div class="card border-0">
                             <div class="row g-0">
                                 <div class="col-md-2">
-                                    <img src="http://localhost:8030/book/images/${item.book.bookId}" 
+                                    <img src="http://localhost:8030/book/images/${item.book.id}" 
                                         class="img-fluid rounded-start" 
                                         alt="${item.book.title}"
                                         style="object-fit: cover; height: 100px;">
@@ -542,88 +577,158 @@ document.getElementById('checkoutButton')?.addEventListener('click', async () =>
 
 // Fetch and Display Orders (Admin Dashboard).
 if (window.location.pathname.endsWith('admin.html')) {
-const fetchOrders = async () => {
-    try {
-        const response = await fetch('http://localhost:8030/api/orders/all');
-        const orders = await response.json();
+    const fetchOrders = async () => {
+        try {
+            // First, let's add console logs to debug the API call
+            console.log('Fetching orders...');
+            const response = await fetch('http://localhost:8030/api/orders/all');
+            console.log('Response:', response);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const orders = await response.json();
+            console.log('Orders data:', orders);
 
-        const ordersContainer = document.getElementById('orders');
-        if (orders.length === 0) {
-            ordersContainer.innerHTML = '<p>No orders found.</p>';
-            return;
-        }
+            const ordersContainer = document.getElementById('orders');
+            
+            // Check if orders is empty or undefined
+            if (!orders || orders.length === 0) {
+                ordersContainer.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="fas fa-inbox fa-3x mb-3"></i>
+                                <p>No orders found</p>
+                            </div>
+                        </td>
+                    </tr>`;
+                return;
+            }
 
-        ordersContainer.innerHTML = orders.map(order => `
-        <div class="card mb-3 ${order.status === 'approved' ? 'border-success' : order.status === 'denied' ? 'border-danger' : ''}">
-            <div class="card-body">
-                <h5 class="card-title">Order ID: ${order.id}</h5>
-                <p class="card-text"><strong>Student:</strong> ${order.username}</p>
-                
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Book Title</th>
-                                <th>Quantity</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+            ordersContainer.innerHTML = orders.map(order => `
+                <tr>
+                    <td>
+                        <span class="fw-bold">#${order.orderId || order.id}</span>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(order.username)}&background=random" 
+                                class="rounded-circle me-2" 
+                                width="32" 
+                                height="32">
+                            <div>
+                                <div class="fw-bold">${order.username}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column">
                             ${order.books.map(book => `
-                                <tr>
-                                    <td>${book.title}</td>
-                                    <td>${book.quantity}</td>
-                                </tr>
+                                <div class="mb-1">
+                                    <span class="fw-bold">${book.title}</span>
+                                    <span class="text-muted">× ${book.quantity}</span>
+                                </div>
                             `).join('')}
-                        </tbody>
-                    </table>
-                </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="fw-bold text-primary">₦${parseFloat(order.totalPrice).toLocaleString()}</span>
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column">
+                            <span>${new Date(order.createdAt).toLocaleDateString()}</span>
+                            <small class="text-muted">${new Date(order.createdAt).toLocaleTimeString()}</small>
+                        </div>
+                    </td>
+                    <td>
+                        ${getStatusBadge(order.status)}
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            ${!order.status ? `
+                                <button class="btn btn-sm btn-success me-1" onclick="updateOrderStatus('${order.orderId || order.id}', 'approved')">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger me-1" onclick="updateOrderStatus('${order.orderId || order.id}', 'denied')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            ` : `
+                                <button class="btn btn-sm btn-secondary" disabled>
+                                    <i class="fas fa-lock"></i>
+                                </button>
+                            `}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
 
-                <p class="card-text"><strong>Total Price:</strong> <span class="fw-bold text-success">₦${order.totalPrice}</span></p>
-                <p class="card-text"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
-                
-                ${order.status ? 
-                    `<div class="alert ${order.status === 'approved' ? 'alert-success' : 'alert-danger'} mt-2">
-                        Status: ${order.status.toUpperCase()}
-                    </div>` :
-                    `<div class="mt-3">
-                        <button class="btn btn-success me-2" onclick="updateOrderStatus('${order.id}', 'approved')">Approve</button>
-                        <button class="btn btn-danger" onclick="updateOrderStatus('${order.id}', 'denied')">Deny</button>
-                    </div>`
-                }
-            </div>
-        </div>
-        `).join('');
-    } catch (err) {
-        console.error('Error fetching orders:', err);
-        document.getElementById('orders').innerHTML = '<p>Failed to load orders.</p>';
-    }
-};
+            // Initialize DataTable with proper configuration
+            if ($.fn.DataTable.isDataTable('#ordersTable')) {
+                $('#ordersTable').DataTable().destroy();
+            }
 
-// Add new function to handle order status updates
-const updateOrderStatus = async (orderId, status) => {
-    try {
-        const response = await fetch(`http://localhost:8030/api/orders/status/${orderId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ status })
-        });
+            $('#ordersTable').DataTable({
+                pageLength: 10,
+                order: [[4, 'desc']], // Sort by date column descending
+                responsive: true,
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'collection',
+                        text: '<i class="fas fa-download"></i> Export',
+                        buttons: ['copy', 'excel', 'pdf', 'print']
+                    }
+                ]
+            });
 
-        if (response.ok) {
-            alert(`Order ${status} successfully`);
-            fetchOrders(); // Refresh the orders list
-        } else {
-            alert('Failed to update order status');
+        } catch (err) {
+            console.error('Error fetching orders:', err);
+            const ordersContainer = document.getElementById('orders');
+            ordersContainer.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-4">
+                        <div class="text-danger">
+                            <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
+                            <p>Failed to load orders. Please try again later.</p>
+                            <button class="btn btn-primary btn-sm mt-2" onclick="fetchOrders()">
+                                <i class="fas fa-sync-alt me-1"></i> Retry
+                            </button>
+                        </div>
+                    </td>
+                </tr>`;
         }
-    } catch (error) {
-        console.error('Error updating order status:', error);
-        alert('Error updating order status');
-    }
-};
+    };
 
-// Call the function to fetch and display orders
-fetchOrders();
+    // Helper function for status badges
+    function getStatusBadge(status) {
+        const badges = {
+            'approved': '<span class="badge bg-success">Approved</span>',
+            'denied': '<span class="badge bg-danger">Denied</span>',
+            'pending': '<span class="badge bg-warning">Pending</span>'
+        };
+        return badges[status?.toLowerCase()] || '<span class="badge bg-secondary">Processing</span>';
+    }
+
+    // Call fetchOrders when the page loads
+    fetchOrders();
+
+    // Add event listeners for filters
+    document.getElementById('statusFilter').addEventListener('change', function() {
+        const table = $('#ordersTable').DataTable();
+        table.draw();
+    });
+
+    document.getElementById('dateFilter').addEventListener('change', function() {
+        const table = $('#ordersTable').DataTable();
+        table.draw();
+    });
+
+    document.getElementById('orderSearch').addEventListener('keyup', function() {
+        const table = $('#ordersTable').DataTable();
+        table.search(this.value).draw();
+    });
 }
 
 // Fetch and Display Order History
@@ -889,33 +994,7 @@ if (window.location.pathname.endsWith('student-chat.html') ||
         });
     }
 
-// Function to update the dashboard statistics
-function updateDashboardStats() {
-    // Get references to the count elements
-    const orderCountElement = document.getElementById('orderCount');
-    const userCountElement = document.getElementById('userCount');
-    const bookCountElement = document.getElementById('bookCount');
 
-    // Fetch the counts from your database/backend
-    // Replace these with actual API calls to your backend
-    fetch('/api/orders/count')
-        .then(response => response.json())
-        .then(data => orderCountElement.textContent = data.count)
-        .catch(error => console.error('Error fetching order count:', error));
-
-    fetch('/api/users/count')
-        .then(response => response.json())
-        .then(data => userCountElement.textContent = data.count)
-        .catch(error => console.error('Error fetching user count:', error));
-
-    fetch('/api/books/count')
-        .then(response => response.json())
-        .then(data => bookCountElement.textContent = data.count)
-        .catch(error => console.error('Error fetching book count:', error));
-}
-
-// Call the function when the page loads
-document.addEventListener('DOMContentLoaded', updateDashboardStats);
 
 let currentSelectedUser = null;
 
