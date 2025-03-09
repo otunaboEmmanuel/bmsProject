@@ -67,7 +67,7 @@ const displayUsername = () => {
     
     } else {
         // Redirect to login if no username is found
-        window.location.href = 'login.html';
+       // window.location.href = 'login.html';
     }
 };
 
