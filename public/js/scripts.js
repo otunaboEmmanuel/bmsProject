@@ -1407,7 +1407,7 @@ async function updateBookStatistics() {
 }
 
 // Call the function when the page loads
+// Call the function when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     updateBookStatistics();
 });
-
