@@ -623,7 +623,7 @@ if (window.location.pathname.endsWith('admin.html')) {
             ordersContainer.innerHTML = orders.map(order => `
                 <tr>
                     <td>
-                        <span class="fw-bold">#${order.orderId || order.id}</span>
+                        <span class="fw-bold">#${order.id}</span>
                     </td>
                     <td>
                         <div class="d-flex align-items-center">
@@ -662,12 +662,12 @@ if (window.location.pathname.endsWith('admin.html')) {
                         <div class="btn-group">
                             ${!order.status ? `
                                 <button class="btn btn-sm btn-success me-1" 
-                                        onclick="updateOrderStatus('${order.orderId || order.id}', 'approved')"
+                                        onclick="updateOrderStatus(${order.id}, 'approved')"
                                         title="Approve Order">
                                     <i class="fas fa-check"></i>
                                 </button>
                                 <button class="btn btn-sm btn-danger me-1" 
-                                        onclick="updateOrderStatus('${order.orderId || order.id}', 'denied')"
+                                        onclick="updateOrderStatus(${order.id}, 'denied')"
                                         title="Deny Order">
                                     <i class="fas fa-times"></i>
                                 </button>
