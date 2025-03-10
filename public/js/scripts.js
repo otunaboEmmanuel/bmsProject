@@ -1,5 +1,3 @@
-//let userId;
-// Login Form Submission
 document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('email').value;
@@ -23,7 +21,14 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
         localStorage.setItem('username', data.userName); // Store username
         window.location.href = data.role.toLowerCase() === 'admin' ? 'admin.html' : 'student.html';
     } else {
-        alert(data.message);
+        // Show a more specific error message
+        const errorMessage = document.getElementById('errorMessage');
+        errorMessage.textContent = 'Incorrect email or password';
+        errorMessage.style.display = 'block';
+        document.getElementById('loginForm').classList.add('shake');
+        setTimeout(() => {
+            document.getElementById('loginForm').classList.remove('shake');
+        }, 1000);
     }
 });
 
@@ -207,6 +212,7 @@ if (window.location.pathname.endsWith('admin-books.html')) {
             }
 
             const booksContainer = document.getElementById('books');
+            booksContainer.innerHTML = ''; // Clear previous content
 
             books.profile.forEach((book) => {
                 const imageUrl = `http://localhost:8030/book/images/${book.bookId}`;
@@ -236,7 +242,6 @@ if (window.location.pathname.endsWith('admin-books.html')) {
     };
 
     fetchBooks();
-
 }
 
 // Edit Book
@@ -656,15 +661,20 @@ if (window.location.pathname.endsWith('admin.html')) {
                     <td>
                         <div class="btn-group">
                             ${!order.status ? `
-                                <button class="btn btn-sm btn-success me-1" onclick="updateOrderStatus('${order.orderId || order.id}', 'approved')">
+                                <button class="btn btn-sm btn-success me-1" 
+                                        onclick="updateOrderStatus('${order.orderId || order.id}', 'approved')"
+                                        title="Approve Order">
                                     <i class="fas fa-check"></i>
                                 </button>
-                                <button class="btn btn-sm btn-danger me-1" onclick="updateOrderStatus('${order.orderId || order.id}', 'denied')">
+                                <button class="btn btn-sm btn-danger me-1" 
+                                        onclick="updateOrderStatus('${order.orderId || order.id}', 'denied')"
+                                        title="Deny Order">
                                     <i class="fas fa-times"></i>
                                 </button>
                             ` : `
-                                <button class="btn btn-sm btn-secondary" disabled>
-                                    <i class="fas fa-lock"></i>
+                                <button class="btn btn-sm btn-${order.status === 'approved' ? 'success' : 'danger'}" disabled>
+                                    <i class="fas fa-${order.status === 'approved' ? 'check-circle' : 'times-circle'}"></i>
+                                    ${order.status === 'approved' ? 'Approved' : 'Denied'}
                                 </button>
                             `}
                         </div>
@@ -712,11 +722,11 @@ if (window.location.pathname.endsWith('admin.html')) {
     // Helper function for status badges
     function getStatusBadge(status) {
         const badges = {
-            'approved': '<span class="badge bg-success">Approved</span>',
-            'denied': '<span class="badge bg-danger">Denied</span>',
-            'pending': '<span class="badge bg-warning">Pending</span>'
+            'approved': '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Approved</span>',
+            'denied': '<span class="badge bg-danger"><i class="fas fa-times-circle"></i> Denied</span>',
+            'pending': '<span class="badge bg-warning"><i class="fas fa-clock"></i> Pending</span>'
         };
-        return badges[status?.toLowerCase()] || '<span class="badge bg-secondary">Processing</span>';
+        return badges[status?.toLowerCase()] || '<span class="badge bg-secondary"><i class="fas fa-hourglass-half"></i> Processing</span>';
     }
 
     // Call fetchOrders when the page loads
@@ -739,6 +749,53 @@ if (window.location.pathname.endsWith('admin.html')) {
     });
 }
 
+
+// Add this function after the fetchOrders function
+const updateOrderStatus = async (orderId, status) => {
+    try {
+        const response = await fetch(`http://localhost:8030/api/orders/updateStatus/${orderId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status })
+        });
+
+        if (response.ok) {
+            // Show success message with the status
+            const statusMessage = status === 'approved' ? 
+                'Order has been approved!' : 
+                'Order has been denied.';
+            
+            const alertClass = status === 'approved' ? 
+                'alert-success' : 
+                'alert-danger';
+
+            // Create alert element
+            const alert = document.createElement('div');
+            alert.className = `alert ${alertClass} position-fixed top-0 start-50 translate-middle-x mt-3`;
+            alert.style.zIndex = '1050';
+            alert.innerHTML = `
+                <i class="fas ${status === 'approved' ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                ${statusMessage}
+            `;
+            document.body.appendChild(alert);
+
+            // Remove alert after 3 seconds
+            setTimeout(() => {
+                alert.remove();
+            }, 3000);
+
+            // Refresh the orders list
+            fetchOrders();
+        } else {
+            throw new Error('Failed to update order status');
+        }
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        alert('Failed to update order status. Please try again.');
+    }
+};
 // Fetch and Display Order History
 const fetchOrderHistory = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -1036,7 +1093,7 @@ const fetchChatList = async () => {
                 .sort((a, b) => new Date(b[1].lastMessage) - new Date(a[1].lastMessage))
                 .map(([userId, data]) => `
                     <div class="chat-list-item list-group-item list-group-item-action ${currentSelectedUser === userId ? 'active' : ''}"
-                         onclick="selectChat('${userId}', '${data.userName}')">
+                         onclick="selectChat('${userId}', '${data.userName}', event)">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <span class="user-status ${data.messages.length > 0 ? 'status-online' : 'status-offline'}"></span>
@@ -1056,52 +1113,276 @@ const fetchChatList = async () => {
     }
 };
 
-const selectChat = (userId, userName) => {
-    currentSelectedUser = userId;
-    document.getElementById('currentChatUser').textContent = userName;
-    fetchMessages(userId);
-    
-    // Update active state in chat list
-    document.querySelectorAll('.chat-list-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    event.currentTarget.classList.add('active');
-};
+// Removed duplicate selectChat function
 
 // Add admin reply form handler
-document.getElementById('adminReplyForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!currentSelectedUser) {
-        alert('Please select a conversation first');
-        return;
-    }
-
-    const message = document.getElementById('replyMessage').value;
-    try {
-        const response = await fetch('http://localhost:8030/messages/reply', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                userId: currentSelectedUser,
-                message,
-                isAdminMessage: true
-            }),
-        });
-
-        if (response.ok) {
-            document.getElementById('replyMessage').value = '';
-            fetchMessages(currentSelectedUser);
-        }
-    } catch (error) {
-        console.error('Error sending reply:', error);
-    }
-});
+// Removed duplicate declaration of adminReplyForm
 
 // Initialize admin chat
 if (window.location.pathname.endsWith('admin-chat.html')) {
     fetchChatList();
     setInterval(fetchChatList, 5000); // Update chat list every 5 seconds
 }
+
+
+
+// Function to fetch all registered users
+const fetchRegisteredUsers = async () => {
+    try {
+        const response = await fetch('http://localhost:8030/students/allStudents');
+        const data = await response.json();
+        console.log('Fetched users:', data); // Debug log
+        if (data && data.profile && Array.isArray(data.profile)) {
+            return data.profile.filter(user => user.role !== 'ADMIN');
+        }
+        return [];
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        return [];
+    }
+};
+
+// Function to initialize the new message modal
+const initializeNewMessageModal = async () => {
+    const userSearch = document.getElementById('userSearch');
+    const userList = document.getElementById('userList');
+    const modalElement = document.getElementById('newMessageModal');
+    let users = [];
+
+    // Create modal instance
+    const modal = new bootstrap.Modal(modalElement);
+
+    // Function to display filtered users
+    const displayFilteredUsers = (filteredUsers) => {
+        if (!userList) return;
+        console.log('Displaying users:', filteredUsers);
+
+        if (filteredUsers.length === 0) {
+            userList.innerHTML = `
+                <div class="list-group-item text-center text-muted">
+                    <i class="fas fa-users fa-2x mb-2 d-block"></i>
+                    <p class="mb-0">No users found</p>
+                </div>`;
+            return;
+        }
+
+        userList.innerHTML = filteredUsers.map(user => `
+            <button type="button" 
+                    class="list-group-item list-group-item-action" 
+                    onclick="selectUserToMessage('${user.userId}', '${user.userName}')">
+                <div class="d-flex align-items-center">
+                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(user.userName)}&background=random" 
+                         class="rounded-circle me-3" 
+                         width="40" 
+                         height="40">
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong>${user.userName}</strong>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                        <small class="text-muted">${user.email}</small>
+                    </div>
+                </div>
+            </button>
+        `).join('');
+    };
+
+    // Initial load of users
+    const loadUsers = async () => {
+        users = await fetchRegisteredUsers();
+        console.log('Loaded users:', users);
+        displayFilteredUsers(users);
+    };
+
+    // Load users when modal opens
+    modalElement.addEventListener('show.bs.modal', loadUsers);
+
+    // Handle user search
+    userSearch?.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredUsers = users.filter(user => 
+            user.userName.toLowerCase().includes(searchTerm) || 
+            user.email.toLowerCase().includes(searchTerm)
+        );
+        displayFilteredUsers(filteredUsers);
+    });
+};
+
+// Function to select a user to message
+const selectUserToMessage = async (userId, userName) => {
+    console.log('Selecting user:', userId, userName);
+    
+    // Get modal instance and hide it
+    const modalElement = document.getElementById('newMessageModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+    modal.hide();
+    
+    // Set the selected user as current chat
+    currentSelectedUser = userId;
+    
+    // Update the chat header with selected user
+    const userHeader = document.getElementById('currentChatUser');
+    if (userHeader) {
+        userHeader.innerHTML = `
+            <div class="d-flex align-items-center">
+                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random" 
+                     class="rounded-circle me-2" 
+                     width="32" 
+                     height="32">
+                <span>${userName}</span>
+            </div>
+        `;
+    }
+
+    // Clear any existing messages and show welcome message
+    const messagesContainer = document.getElementById('messagesContainer');
+    if (messagesContainer) {
+        messagesContainer.innerHTML = `
+            <div class="text-center text-muted my-4">
+                <i class="fas fa-comments fa-2x mb-2 d-block"></i>
+                <p class="mb-0">Start a conversation with ${userName}</p>
+            </div>
+        `;
+    }
+
+    // Enable and focus the reply form
+    const replyForm = document.getElementById('adminReplyForm');
+    const replyInput = document.getElementById('replyMessage');
+    if (replyForm && replyInput) {
+        replyInput.disabled = false;
+        replyInput.placeholder = `Message ${userName}...`;
+        replyInput.focus();
+    }
+
+    // Add the user to the chat list if not already present
+    await updateChatList(userId, userName);
+};
+
+// Function to update chat list with new conversation
+const updateChatList = async (userId, userName) => {
+    const chatList = document.getElementById('chatList');
+    if (!chatList) return;
+
+    // Check if user already exists in chat list
+    const existingChat = chatList.querySelector(`[data-user-id="${userId}"]`);
+    if (!existingChat) {
+        // Add new chat item to the top of the list
+        const newChatItem = `
+            <div class="chat-list-item list-group-item list-group-item-action active"
+                 data-user-id="${userId}"
+                 onclick="selectChat('${userId}', '${userName}')">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random" 
+                             class="rounded-circle me-2" 
+                             width="32" 
+                             height="32">
+                        <strong>${userName}</strong>
+                    </div>
+                </div>
+                <small class="text-muted">
+                    New conversation
+                </small>
+            </div>
+        `;
+        chatList.insertAdjacentHTML('afterbegin', newChatItem);
+    } else {
+        // If chat exists, just activate it
+        document.querySelectorAll('.chat-list-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        existingChat.classList.add('active');
+    }
+};
+
+// Update the admin reply form handler
+const adminReplyForm = document.getElementById('adminReplyForm');
+if (adminReplyForm) {
+    adminReplyForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentSelectedUser) {
+            alert('Please select a conversation first');
+            return;
+        }
+
+        const message = document.getElementById('replyMessage').value.trim();
+        if (!message) return;
+
+        try {
+            const response = await fetch('http://localhost:8030/messages/reply', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: currentSelectedUser,
+                    message,
+                    isAdminMessage: true
+                }),
+            });
+
+            if (response.ok) {
+                // Clear input
+                document.getElementById('replyMessage').value = '';
+                
+                // Add message to UI immediately
+                const messagesContainer = document.getElementById('messagesContainer');
+                const newMessage = `
+                    <div class="chat-message sent">
+                        <div class="message-content">
+                            ${message}
+                        </div>
+                        <div class="message-time">
+                            You • ${new Date().toLocaleString()}
+                        </div>
+                    </div>
+                `;
+                messagesContainer.insertAdjacentHTML('beforeend', newMessage);
+                
+                // Scroll to bottom
+                const chatContainer = document.getElementById('chat-container');
+                if (chatContainer) {
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+
+                // Refresh chat list to update last message
+                fetchChatList();
+            }
+        } catch (error) {
+            console.error('Error sending reply:', error);
+            alert('Failed to send message. Please try again.');
+        }
+    }, { once: true }); // Ensure the event listener is only attached once
+}
+
+// Initialize the new message modal when on admin chat page
+if (window.location.pathname.endsWith('admin-chat.html')) {
+    initializeNewMessageModal();
+}
+
+// Update the existing selectChat function to handle new conversations
+const selectChat = (userId, userName, event) => {
+    currentSelectedUser = userId;
+    const userHeader = document.getElementById('currentChatUser');
+    if (userHeader) {
+        userHeader.innerHTML = `
+            <div class="d-flex align-items-center">
+                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random" 
+                     class="rounded-circle me-2" 
+                     width="32" 
+                     height="32">
+                <span>${userName}</span>
+            </div>
+        `;
+    }
+    fetchMessages(userId);
+    
+    // Update active state in chat list
+    document.querySelectorAll('.chat-list-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active');
+    }
+};
 
