@@ -83,50 +83,70 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Fetch and Display Books (Student Dashboard)
 if (window.location.pathname.endsWith('student.html')) {
-    const fetchBooks = async () => {
+    const searchInput = document.getElementById('searchInput');
+    const levelFilter = document.getElementById('levelFilter');
+    let allBooks = []; // Store all books for filtering
+
+    // Function to fetch and display books with search and filter
+    const fetchAndDisplayBooks = async () => {
         try {
-            const response = await fetch('http://localhost:8030/book/allBooks'); // Fetch all books
+            const response = await fetch('http://localhost:8030/book/allBooks');
             const books = await response.json();
-
-            console.log("Books API Response:", books); // Log the response to check the structure
-
-            // Check if books is an array
-            if (!Array.isArray(books.profile)) {
-                console.error("Expected an array but got:", books.profile);
-                return; // Stop execution if it's not an array
-            }
-
-            const booksContainer = document.getElementById('books');
-
-            books.profile.forEach((book) => {
-                const imageUrl = `http://localhost:8030/book/images/${book.bookId}`;
-
-                const html = `
-                    <div class="col-md-4 mb-4">
-                        <div class="card" style="width: 18rem;">
-                            <img src="${imageUrl}" class="card-img-top" alt="${book.title}">
-                            <div class="card-body">
-                                <div class="card-text"><h5 class="card-title">${book.title}</h5></div>
-                                
-                                <p class="card-text">${book.author}</p>
-                                <p class="card-text">₦${book.price}</p>
-                                <p class="card-text">Quantity: ${book.quantity}</p>
-                                <p class="card-text">${book.level} LVL</p>
-                                <button class="btn btn-primary" onclick="addToCart('${book.bookId}')">Add to Cart</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                booksContainer.insertAdjacentHTML('beforeend', html);
-            });
+            allBooks = books.profile; // Store all books
+            filterAndDisplayBooks();
         } catch (error) {
-            console.error("Error fetching books:", error);
+            console.error('Error fetching books:', error);
         }
     };
 
-    fetchBooks();
+    // Function to filter and display books
+    const filterAndDisplayBooks = () => {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedLevel = levelFilter.value;
+        
+        const filteredBooks = allBooks.filter(book => {
+            const matchesSearch = book.title.toLowerCase().includes(searchTerm) || 
+                                book.author.toLowerCase().includes(searchTerm);
+            const matchesLevel = !selectedLevel || book.level.toString() === selectedLevel;
+            return matchesSearch && matchesLevel;
+        });
 
+        const booksContainer = document.getElementById('books');
+        booksContainer.innerHTML = filteredBooks.map(book => `
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card h-100">
+                    <img src="http://localhost:8030/book/images/${book.bookId}" 
+                         class="card-img-top" 
+                         alt="${book.title}"
+                         style="height: 200px; object-fit: cover;">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">${book.title}</h5>
+                        <div class="book-meta">
+                            <i class="fas fa-user"></i>
+                            <span>${book.author}</span>
+                        </div>
+                        <div class="category-badge">Level ${book.level}</div>
+                        <div class="price-tag">₦${book.price}</div>
+                        <div class="stock-status ${book.quantity > 0 ? 'text-success' : 'text-danger'}">
+                            ${book.quantity > 0 ? 'In Stock' : 'Out of Stock'}
+                        </div>
+                        <button onclick="addToCart('${book.bookId}')" 
+                                class="btn btn-primary add-to-cart-btn mt-auto"
+                                ${book.quantity === 0 ? 'disabled' : ''}>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    // Add event listeners for search and filter
+    searchInput?.addEventListener('input', filterAndDisplayBooks);
+    levelFilter?.addEventListener('change', filterAndDisplayBooks);
+
+    // Initial fetch and display
+    fetchAndDisplayBooks();
 }
 
 // Logout Functionality
@@ -198,50 +218,73 @@ document.getElementById('addBookForm')?.addEventListener('submit', async (e) => 
 
 // Fetch and Display Books (Admin Dashboard)
 if (window.location.pathname.endsWith('admin-books.html')) {
-    const fetchBooks = async () => {
+    const searchInput = document.getElementById('searchInput');
+    const levelFilter = document.getElementById('levelFilter');
+    let allBooks = []; // Store all books for filtering
+
+    // Function to fetch and display books with search and filter
+    const fetchAndDisplayBooks = async () => {
         try {
-            const response = await fetch('http://localhost:8030/book/allBooks'); // Fetch all books
+            const response = await fetch('http://localhost:8030/book/allBooks');
             const books = await response.json();
-
-            console.log("Books API Response:", books); // Log the response to check the structure
-
-            // Check if books is an array
-            if (!Array.isArray(books.profile)) {
-                console.error("Expected an array but got:", books.profile);
-                return; // Stop execution if it's not an array
-            }
-
-            const booksContainer = document.getElementById('books');
-            booksContainer.innerHTML = ''; // Clear previous content
-
-            books.profile.forEach((book) => {
-                const imageUrl = `http://localhost:8030/book/images/${book.bookId}`;
-
-                const html = `
-                    <div class="col-md-4 mb-4">
-                        <div class="card" style="width: 18rem;">
-                            <img src="${imageUrl}" class="card-img-top" alt="${book.title}">
-                            <div class="card-body">
-                                <h5 class="card-title">${book.title}</h5>
-                                <p class="card-text">${book.author}</p>
-                                <p class="card-text">₦${book.price}</p>
-                                <p class="card-text">Quantity: ${book.quantity}</p>
-                                <p class="card-text">${book.level} LVL</p>
-                                <button class="btn btn-warning" onclick="editBook('${book.bookId}')">Edit</button>
-                                <button class="btn btn-danger" onclick="deleteBook('${book.bookId}')">Delete</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                booksContainer.insertAdjacentHTML('beforeend', html);
-            });
+            allBooks = books.profile; // Store all books
+            filterAndDisplayBooks();
         } catch (error) {
-            console.error("Error fetching books:", error);
+            console.error('Error fetching books:', error);
         }
     };
 
-    fetchBooks();
+    // Function to filter and display books
+    const filterAndDisplayBooks = () => {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedLevel = levelFilter.value;
+        
+        const filteredBooks = allBooks.filter(book => {
+            const matchesSearch = book.title.toLowerCase().includes(searchTerm) || 
+                                book.author.toLowerCase().includes(searchTerm);
+            const matchesLevel = !selectedLevel || book.level.toString() === selectedLevel;
+            return matchesSearch && matchesLevel;
+        });
+
+        const booksContainer = document.getElementById('books');
+        booksContainer.innerHTML = filteredBooks.map(book => `
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card h-100">
+                    <img src="http://localhost:8030/book/images/${book.bookId}" 
+                         class="card-img-top" 
+                         alt="${book.title}"
+                         style="height: 200px; object-fit: cover;">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">${book.title}</h5>
+                        <div class="book-meta">
+                            <i class="fas fa-user"></i>
+                            <span>${book.author}</span>
+                        </div>
+                        <div class="category-badge">Level ${book.level}</div>
+                        <div class="price-tag">₦${book.price}</div>
+                        <div class="stock-status ${book.quantity > 0 ? 'text-success' : 'text-danger'}">
+                            ${book.quantity > 0 ? 'In Stock' : 'Out of Stock'}
+                        </div>
+                        <button onclick="editBook('${book.bookId}')" 
+                                class="btn btn-warning add-to-cart-btn mt-auto">
+                            Edit
+                        </button>
+                        <button onclick="deleteBook('${book.bookId}')" 
+                                class="btn btn-danger add-to-cart-btn mt-auto">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    // Add event listeners for search and filter
+    searchInput?.addEventListener('input', filterAndDisplayBooks);
+    levelFilter?.addEventListener('change', filterAndDisplayBooks);
+
+    // Initial fetch and display
+    fetchAndDisplayBooks();
 }
 
 // Edit Book
@@ -1378,4 +1421,27 @@ const selectChat = (userId, userName, event) => {
         event.currentTarget.classList.add('active');
     }
 };
+
+async function updateBookStatistics() {
+    try {
+        const response = await fetch('http://localhost:8030/book/allBooks');
+        const books = await response.json();
+        const totalBooks = books.profile.length;
+        const availableBooks = books.profile.filter(book => book.availability === 'yes').length;
+        const outOfStock = books.profile.filter(book => book.availability === 'no').length;
+        const categories = new Set(books.profile.map(book => book.level)).size;
+
+        document.getElementById('totalBooks').textContent = totalBooks;
+        document.getElementById('availableBooks').textContent = availableBooks;
+        document.getElementById('outOfStock').textContent = outOfStock;
+        document.getElementById('categories').textContent = categories;
+    } catch (error) {
+        console.error('Error fetching book statistics:', error);
+    }
+}
+
+// Call the function when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    updateBookStatistics();
+});
 
