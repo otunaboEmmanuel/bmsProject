@@ -30,12 +30,15 @@ public class BookOrder {
 
     private double totalPrice;
     private Date createdAt;
+    @Column(nullable = false)
+    private String status = "pending";
 
     public BookOrder(Users student, List<OrderItem> books, double totalPrice) {
         this.student = student;
         this.books = books;
         this.totalPrice = totalPrice;
         this.createdAt = new Date();
+        this.status = "pending";
     }
 
     public BookOrder() {

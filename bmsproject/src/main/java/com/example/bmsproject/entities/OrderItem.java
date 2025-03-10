@@ -17,6 +17,7 @@ public class OrderItem {
     private Integer id;
 
     @ManyToOne
+    @JsonBackReference
     @JoinColumn(name = "order_id") // Refers to BookOrder, not Order
     private BookOrder order;
 

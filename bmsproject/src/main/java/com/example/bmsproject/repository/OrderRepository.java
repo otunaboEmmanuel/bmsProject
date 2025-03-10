@@ -8,5 +8,6 @@ import java.util.List;
 
 public interface OrderRepository extends JpaRepository<BookOrder, Integer> {
     List<BookOrder> findByStudent(Users student);
+    List<BookOrder> findAllByStatus(String status);
 
 }
