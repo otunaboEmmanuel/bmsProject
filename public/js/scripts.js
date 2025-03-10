@@ -639,7 +639,7 @@ async function fetchOrders() {
 
         const ordersContainer = document.getElementById('orders');
         ordersContainer.innerHTML = orders.map(order => `
-            <tr>
+            <tr data-order-id="${order.orderId || order.id}">
                 <td>
                     <span class="fw-bold">#${order.orderId || order.id}</span>
                 </td>
@@ -661,105 +661,6 @@ async function fetchOrders() {
                                 <span class="fw-bold">${book.title}</span>
                                 <span class="text-muted">× ${book.quantity}</span>
                             </div>
-<<<<<<< HEAD
-                        </td>
-                    </tr>`;
-                return;
-            }
-
-            ordersContainer.innerHTML = orders.map(order => `
-                <tr>
-                    <td>
-                        <span class="fw-bold">#${order.id}</span>
-                    </td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(order.username)}&background=random" 
-                                class="rounded-circle me-2" 
-                                width="32" 
-                                height="32">
-                            <div>
-                                <div class="fw-bold"> ${order.username}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="d-flex flex-column">
-                            ${order.books.map(book => `
-                                <div class="mb-1">
-                                    <span class="fw-bold">${book.title}</span>
-                                    <span class="text-muted">× ${book.quantity}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </td>
-                    <td>
-                        <span class="fw-bold text-primary">₦${parseFloat(order.totalPrice).toLocaleString()}</span>
-                    </td>
-                    <td>
-                        <div class="d-flex flex-column">
-                            <span>${new Date(order.createdAt).toLocaleDateString()}</span>
-                            <small class="text-muted">${new Date(order.createdAt).toLocaleTimeString()}</small>
-                        </div>
-                    </td>
-                    <td>
-                        ${getStatusBadge(order.status)}
-                    </td>
-                    <td>
-                        <div class="btn-group">
-                            ${!order.status ? `
-                                <button class="btn btn-sm btn-success me-1" 
-                                        onclick="updateOrderStatus(${order.id}, 'approved')"
-                                        title="Approve Order">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button class="btn btn-sm btn-danger me-1" 
-                                        onclick="updateOrderStatus(${order.id}, 'denied')"
-                                        title="Deny Order">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            ` : `
-                                <button class="btn btn-sm btn-${order.status === 'approved' ? 'success' : 'danger'}" disabled>
-                                    <i class="fas fa-${order.status === 'approved' ? 'check-circle' : 'times-circle'}"></i>
-                                    ${order.status === 'approved' ? 'Approved' : 'Denied'}
-                                </button>
-                            `}
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-
-            // Initialize DataTable with proper configuration
-            if ($.fn.DataTable.isDataTable('#ordersTable')) {
-                $('#ordersTable').DataTable().destroy();
-            }
-
-            $('#ordersTable').DataTable({
-                pageLength: 10,
-                order: [[4, 'desc']], // Sort by date column descending
-                responsive: true,
-                dom: 'Bfrtip',
-                buttons: [
-                    {
-                        extend: 'collection',
-                        text: '<i class="fas fa-download"></i> Export',
-                        buttons: ['copy', 'excel', 'pdf', 'print']
-                    }
-                ]
-            });
-
-        } catch (err) {
-            console.error('Error fetching orders:', err);
-            const ordersContainer = document.getElementById('orders');
-            ordersContainer.innerHTML = `
-                <tr>
-                    <td colspan="7" class="text-center py-4">
-                        <div class="text-danger">
-                            <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
-                            <p>Failed to load orders. Please try again later.</p>
-                            <button class="btn btn-primary btn-sm mt-2" onclick="fetchOrders()">
-                                <i class="fas fa-sync-alt me-1"></i> Retry
-=======
                         `).join('')}
                     </div>
                 </td>
@@ -782,7 +683,6 @@ async function fetchOrders() {
                                     onclick="updateOrderStatus('${order.orderId || order.id}', 'approved')"
                                     title="Approve Order">
                                 <i class="fas fa-check"></i>
->>>>>>> b23c69aee82df51e55d0a49896eb10e12a2d4b93
                             </button>
                             <button class="btn btn-sm btn-danger me-1" 
                                     onclick="updateOrderStatus('${order.orderId || order.id}', 'denied')"
@@ -888,8 +788,20 @@ async function updateOrderStatus(orderId, status) {
                 alert.remove();
             }, 3000);
 
-            // Refresh the orders list
-            fetchOrders();
+            // Update the order status in the DOM
+            const orderRow = document.querySelector(`tr[data-order-id="${orderId}"]`);
+            if (orderRow) {
+                const statusCell = orderRow.querySelector('td:nth-child(6)');
+                const actionsCell = orderRow.querySelector('td:nth-child(7)');
+                statusCell.innerHTML = getStatusBadge(status);
+                actionsCell.innerHTML = `
+                    <button class="btn btn-sm btn-${status === 'approved' ? 'success' : 'danger'}" disabled>
+                        <i class="fas fa-${status === 'approved' ? 'check-circle' : 'times-circle'}"></i>
+                        ${status === 'approved' ? 'Approved' : 'Denied'}
+                    </button>
+                `;
+            }
+
         } else {
             throw new Error('Failed to update order status');
         }
