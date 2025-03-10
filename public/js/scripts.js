@@ -632,176 +632,135 @@ document.getElementById('checkoutButton')?.addEventListener('click', async () =>
 }
 
 // Fetch and Display Orders (Admin Dashboard).
-if (window.location.pathname.endsWith('admin.html')) {
-    const fetchOrders = async () => {
-        try {
-            // First, let's add console logs to debug the API call
-            console.log('Fetching orders...');
-            const response = await fetch('http://localhost:8030/api/orders/all');
-            console.log('Response:', response);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const orders = await response.json();
-            console.log('Orders data:', orders);
+async function fetchOrders() {
+    try {
+        const response = await fetch('http://localhost:8030/api/orders/all');
+        const orders = await response.json();
 
-            const ordersContainer = document.getElementById('orders');
-            
-            // Check if orders is empty or undefined
-            if (!orders || orders.length === 0) {
-                ordersContainer.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="text-center py-4">
-                            <div class="text-muted">
-                                <i class="fas fa-inbox fa-3x mb-3"></i>
-                                <p>No orders found</p>
+        const ordersContainer = document.getElementById('orders');
+        ordersContainer.innerHTML = orders.map(order => `
+            <tr>
+                <td>
+                    <span class="fw-bold">#${order.orderId || order.id}</span>
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(order.username)}&background=random" 
+                            class="rounded-circle me-2" 
+                            width="32" 
+                            height="32">
+                        <div>
+                            <div class="fw-bold"> ${order.username}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="d-flex flex-column">
+                        ${order.books.map(book => `
+                            <div class="mb-1">
+                                <span class="fw-bold">${book.title}</span>
+                                <span class="text-muted">× ${book.quantity}</span>
                             </div>
-                        </td>
-                    </tr>`;
-                return;
-            }
-
-            ordersContainer.innerHTML = orders.map(order => `
-                <tr>
-                    <td>
-                        <span class="fw-bold">#${order.orderId || order.id}</span>
-                    </td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(order.username)}&background=random" 
-                                class="rounded-circle me-2" 
-                                width="32" 
-                                height="32">
-                            <div>
-                                <div class="fw-bold"> ${order.username}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="d-flex flex-column">
-                            ${order.books.map(book => `
-                                <div class="mb-1">
-                                    <span class="fw-bold">${book.title}</span>
-                                    <span class="text-muted">× ${book.quantity}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </td>
-                    <td>
-                        <span class="fw-bold text-primary">₦${parseFloat(order.totalPrice).toLocaleString()}</span>
-                    </td>
-                    <td>
-                        <div class="d-flex flex-column">
-                            <span>${new Date(order.createdAt).toLocaleDateString()}</span>
-                            <small class="text-muted">${new Date(order.createdAt).toLocaleTimeString()}</small>
-                        </div>
-                    </td>
-                    <td>
-                        ${getStatusBadge(order.status)}
-                    </td>
-                    <td>
-                        <div class="btn-group">
-                            ${!order.status ? `
-                                <button class="btn btn-sm btn-success me-1" 
-                                        onclick="updateOrderStatus('${order.orderId || order.id}', 'approved')"
-                                        title="Approve Order">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button class="btn btn-sm btn-danger me-1" 
-                                        onclick="updateOrderStatus('${order.orderId || order.id}', 'denied')"
-                                        title="Deny Order">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            ` : `
-                                <button class="btn btn-sm btn-${order.status === 'approved' ? 'success' : 'danger'}" disabled>
-                                    <i class="fas fa-${order.status === 'approved' ? 'check-circle' : 'times-circle'}"></i>
-                                    ${order.status === 'approved' ? 'Approved' : 'Denied'}
-                                </button>
-                            `}
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-
-            // Initialize DataTable with proper configuration
-            if ($.fn.DataTable.isDataTable('#ordersTable')) {
-                $('#ordersTable').DataTable().destroy();
-            }
-
-            $('#ordersTable').DataTable({
-                pageLength: 10,
-                order: [[4, 'desc']], // Sort by date column descending
-                responsive: true,
-                dom: 'Bfrtip',
-                buttons: [
-                    {
-                        extend: 'collection',
-                        text: '<i class="fas fa-download"></i> Export',
-                        buttons: ['copy', 'excel', 'pdf', 'print']
-                    }
-                ]
-            });
-
-        } catch (err) {
-            console.error('Error fetching orders:', err);
-            const ordersContainer = document.getElementById('orders');
-            ordersContainer.innerHTML = `
-                <tr>
-                    <td colspan="7" class="text-center py-4">
-                        <div class="text-danger">
-                            <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
-                            <p>Failed to load orders. Please try again later.</p>
-                            <button class="btn btn-primary btn-sm mt-2" onclick="fetchOrders()">
-                                <i class="fas fa-sync-alt me-1"></i> Retry
+                        `).join('')}
+                    </div>
+                </td>
+                <td>
+                    <span class="fw-bold text-primary">₦${parseFloat(order.totalPrice).toLocaleString()}</span>
+                </td>
+                <td>
+                    <div class="d-flex flex-column">
+                        <span>${new Date(order.createdAt).toLocaleDateString()}</span>
+                        <small class="text-muted">${new Date(order.createdAt).toLocaleTimeString()}</small>
+                    </div>
+                </td>
+                <td>
+                    ${getStatusBadge(order.status)}
+                </td>
+                <td>
+                    <div class="btn-group">
+                        ${!order.status ? `
+                            <button class="btn btn-sm btn-success me-1" 
+                                    onclick="updateOrderStatus('${order.orderId || order.id}', 'approved')"
+                                    title="Approve Order">
+                                <i class="fas fa-check"></i>
                             </button>
-                        </div>
-                    </td>
-                </tr>`;
+                            <button class="btn btn-sm btn-danger me-1" 
+                                    onclick="updateOrderStatus('${order.orderId || order.id}', 'denied')"
+                                    title="Deny Order">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        ` : `
+                            <button class="btn btn-sm btn-${order.status === 'approved' ? 'success' : 'danger'}" disabled>
+                                <i class="fas fa-${order.status === 'approved' ? 'check-circle' : 'times-circle'}"></i>
+                                ${order.status === 'approved' ? 'Approved' : 'Denied'}
+                            </button>
+                        `}
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+
+        // Initialize DataTable with proper configuration
+        if ($.fn.DataTable.isDataTable('#ordersTable')) {
+            $('#ordersTable').DataTable().destroy();
         }
-    };
 
-    // Helper function for status badges
-    function getStatusBadge(status) {
-        const badges = {
-            'approved': '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Approved</span>',
-            'denied': '<span class="badge bg-danger"><i class="fas fa-times-circle"></i> Denied</span>',
-            'pending': '<span class="badge bg-warning"><i class="fas fa-clock"></i> Pending</span>'
-        };
-        return badges[status?.toLowerCase()] || '<span class="badge bg-secondary"><i class="fas fa-hourglass-half"></i> Processing</span>';
+        $('#ordersTable').DataTable({
+            pageLength: 10,
+            order: [[4, 'desc']], // Sort by date column descending
+            responsive: true,
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'collection',
+                    text: '<i class="fas fa-download"></i> Export',
+                    buttons: ['copy', 'excel', 'pdf', 'print']
+                }
+            ]
+        });
+
+    } catch (err) {
+        console.error('Error fetching orders:', err);
+        const ordersContainer = document.getElementById('orders');
+        ordersContainer.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center py-4">
+                    <div class="text-danger">
+                        <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
+                        <p>Failed to load orders. Please try again later.</p>
+                        <button class="btn btn-primary btn-sm mt-2" onclick="fetchOrders()">
+                            <i class="fas fa-sync-alt me-1"></i> Retry
+                        </button>
+                    </div>
+                </td>
+            </tr>`;
     }
-
-    // Call fetchOrders when the page loads
-    fetchOrders();
-
-    // Add event listeners for filters
-    document.getElementById('statusFilter').addEventListener('change', function() {
-        const table = $('#ordersTable').DataTable();
-        table.draw();
-    });
-
-    document.getElementById('dateFilter').addEventListener('change', function() {
-        const table = $('#ordersTable').DataTable();
-        table.draw();
-    });
-
-    document.getElementById('orderSearch').addEventListener('keyup', function() {
-        const table = $('#ordersTable').DataTable();
-        table.search(this.value).draw();
-    });
 }
 
+// Helper function for status badges
+function getStatusBadge(status) {
+    const badges = {
+        'approved': '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Approved</span>',
+        'denied': '<span class="badge bg-danger"><i class="fas fa-times-circle"></i> Denied</span>',
+        'pending': '<span class="badge bg-warning"><i class="fas fa-clock"></i> Pending</span>'
+    };
+    return badges[status?.toLowerCase()] || '<span class="badge bg-secondary"><i class="fas fa-hourglass-half"></i> Processing</span>';
+}
+
+// Call fetchOrders when the page loads
+if (window.location.pathname.endsWith('admin.html')) {
+    fetchOrders();
+}
 
 // Add this function after the fetchOrders function
-const updateOrderStatus = async (orderId, status) => {
+async function updateOrderStatus(orderId, status) {
     try {
         const response = await fetch(`http://localhost:8030/api/orders/updateStatus/${orderId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ status })
+            body: JSON.stringify({ status }),
         });
 
         if (response.ok) {
@@ -838,7 +797,7 @@ const updateOrderStatus = async (orderId, status) => {
         console.error('Error updating order status:', error);
         alert('Failed to update order status. Please try again.');
     }
-};
+}
 // Fetch and Display Order History
 const fetchOrderHistory = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
