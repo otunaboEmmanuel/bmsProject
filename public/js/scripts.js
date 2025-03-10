@@ -524,6 +524,7 @@ if (window.location.pathname.endsWith('cart.html')) {
 }
 
 // Checkout Button
+if (window.location.pathname.endsWith('cart.html')) {
 document.getElementById('checkoutButton')?.addEventListener('click', async () => {
     const user = JSON.parse(localStorage.getItem('user'));
     const userId = JSON.parse(localStorage.getItem('userId'));
@@ -535,8 +536,11 @@ document.getElementById('checkoutButton')?.addEventListener('click', async () =>
     // Fetch the cart items
     const cartResponse = await fetch(`http://localhost:8030/cart/getCartDetails/${userId}`);
     const cart = await cartResponse.json();
-
-    if (cart.length === 0) {
+  console.log(cart)
+  console.log(userId);
+  console.log(user);
+  
+    if (cart.length == 0) {
         alert('Your cart is empty');
         return;
     }
@@ -554,6 +558,8 @@ document.getElementById('checkoutButton')?.addEventListener('click', async () =>
     //     totalPrice,
     // };
 
+    
+    
     // Send the order to the backend
     const response = await fetch(`http://localhost:8030/api/orders/checkout/${userId}`, {
         method: 'POST',
@@ -575,6 +581,7 @@ document.getElementById('checkoutButton')?.addEventListener('click', async () =>
         alert('Failed to place order');
     }
 });
+}
 
 // Fetch and Display Orders (Admin Dashboard).
 if (window.location.pathname.endsWith('admin.html')) {
@@ -620,7 +627,7 @@ if (window.location.pathname.endsWith('admin.html')) {
                                 width="32" 
                                 height="32">
                             <div>
-                                <div class="fw-bold">${order.username}</div>
+                                <div class="fw-bold"> ${order.username}</div>
                             </div>
                         </div>
                     </td>
