@@ -83,50 +83,70 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Fetch and Display Books (Student Dashboard)
 if (window.location.pathname.endsWith('student.html')) {
-    const fetchBooks = async () => {
+    const searchInput = document.getElementById('searchInput');
+    const levelFilter = document.getElementById('levelFilter');
+    let allBooks = []; // Store all books for filtering
+
+    // Function to fetch and display books with search and filter
+    const fetchAndDisplayBooks = async () => {
         try {
-            const response = await fetch('http://localhost:8030/book/allBooks'); // Fetch all books
+            const response = await fetch('http://localhost:8030/book/allBooks');
             const books = await response.json();
-
-            console.log("Books API Response:", books); // Log the response to check the structure
-
-            // Check if books is an array
-            if (!Array.isArray(books.profile)) {
-                console.error("Expected an array but got:", books.profile);
-                return; // Stop execution if it's not an array
-            }
-
-            const booksContainer = document.getElementById('books');
-
-            books.profile.forEach((book) => {
-                const imageUrl = `http://localhost:8030/book/images/${book.bookId}`;
-
-                const html = `
-                    <div class="col-md-4 mb-4">
-                        <div class="card" style="width: 18rem;">
-                            <img src="${imageUrl}" class="card-img-top" alt="${book.title}">
-                            <div class="card-body">
-                                <div class="card-text"><h5 class="card-title">${book.title}</h5></div>
-                                
-                                <p class="card-text">${book.author}</p>
-                                <p class="card-text">₦${book.price}</p>
-                                <p class="card-text">Quantity: ${book.quantity}</p>
-                                <p class="card-text">${book.level} LVL</p>
-                                <button class="btn btn-primary" onclick="addToCart('${book.bookId}')">Add to Cart</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                booksContainer.insertAdjacentHTML('beforeend', html);
-            });
+            allBooks = books.profile; // Store all books
+            filterAndDisplayBooks();
         } catch (error) {
-            console.error("Error fetching books:", error);
+            console.error('Error fetching books:', error);
         }
     };
 
-    fetchBooks();
+    // Function to filter and display books
+    const filterAndDisplayBooks = () => {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedLevel = levelFilter.value;
+        
+        const filteredBooks = allBooks.filter(book => {
+            const matchesSearch = book.title.toLowerCase().includes(searchTerm) || 
+                                book.author.toLowerCase().includes(searchTerm);
+            const matchesLevel = !selectedLevel || book.level.toString() === selectedLevel;
+            return matchesSearch && matchesLevel;
+        });
 
+        const booksContainer = document.getElementById('books');
+        booksContainer.innerHTML = filteredBooks.map(book => `
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card h-100">
+                    <img src="http://localhost:8030/book/images/${book.bookId}" 
+                         class="card-img-top" 
+                         alt="${book.title}"
+                         style="height: 200px; object-fit: cover;">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">${book.title}</h5>
+                        <div class="book-meta">
+                            <i class="fas fa-user"></i>
+                            <span>${book.author}</span>
+                        </div>
+                        <div class="category-badge">Level ${book.level}</div>
+                        <div class="price-tag">₦${book.price}</div>
+                        <div class="stock-status ${book.quantity > 0 ? 'text-success' : 'text-danger'}">
+                            ${book.quantity > 0 ? 'In Stock' : 'Out of Stock'}
+                        </div>
+                        <button onclick="addToCart('${book.bookId}')" 
+                                class="btn btn-primary add-to-cart-btn mt-auto"
+                                ${book.quantity === 0 ? 'disabled' : ''}>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    // Add event listeners for search and filter
+    searchInput?.addEventListener('input', filterAndDisplayBooks);
+    levelFilter?.addEventListener('change', filterAndDisplayBooks);
+
+    // Initial fetch and display
+    fetchAndDisplayBooks();
 }
 
 // Logout Functionality
@@ -198,50 +218,73 @@ document.getElementById('addBookForm')?.addEventListener('submit', async (e) => 
 
 // Fetch and Display Books (Admin Dashboard)
 if (window.location.pathname.endsWith('admin-books.html')) {
-    const fetchBooks = async () => {
+    const searchInput = document.getElementById('searchInput');
+    const levelFilter = document.getElementById('levelFilter');
+    let allBooks = []; // Store all books for filtering
+
+    // Function to fetch and display books with search and filter
+    const fetchAndDisplayBooks = async () => {
         try {
-            const response = await fetch('http://localhost:8030/book/allBooks'); // Fetch all books
+            const response = await fetch('http://localhost:8030/book/allBooks');
             const books = await response.json();
-
-            console.log("Books API Response:", books); // Log the response to check the structure
-
-            // Check if books is an array
-            if (!Array.isArray(books.profile)) {
-                console.error("Expected an array but got:", books.profile);
-                return; // Stop execution if it's not an array
-            }
-
-            const booksContainer = document.getElementById('books');
-            booksContainer.innerHTML = ''; // Clear previous content
-
-            books.profile.forEach((book) => {
-                const imageUrl = `http://localhost:8030/book/images/${book.bookId}`;
-
-                const html = `
-                    <div class="col-md-4 mb-4">
-                        <div class="card" style="width: 18rem;">
-                            <img src="${imageUrl}" class="card-img-top" alt="${book.title}">
-                            <div class="card-body">
-                                <h5 class="card-title">${book.title}</h5>
-                                <p class="card-text">${book.author}</p>
-                                <p class="card-text">₦${book.price}</p>
-                                <p class="card-text">Quantity: ${book.quantity}</p>
-                                <p class="card-text">${book.level} LVL</p>
-                                <button class="btn btn-warning" onclick="editBook('${book.bookId}')">Edit</button>
-                                <button class="btn btn-danger" onclick="deleteBook('${book.bookId}')">Delete</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                booksContainer.insertAdjacentHTML('beforeend', html);
-            });
+            allBooks = books.profile; // Store all books
+            filterAndDisplayBooks();
         } catch (error) {
-            console.error("Error fetching books:", error);
+            console.error('Error fetching books:', error);
         }
     };
 
-    fetchBooks();
+    // Function to filter and display books
+    const filterAndDisplayBooks = () => {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedLevel = levelFilter.value;
+        
+        const filteredBooks = allBooks.filter(book => {
+            const matchesSearch = book.title.toLowerCase().includes(searchTerm) || 
+                                book.author.toLowerCase().includes(searchTerm);
+            const matchesLevel = !selectedLevel || book.level.toString() === selectedLevel;
+            return matchesSearch && matchesLevel;
+        });
+
+        const booksContainer = document.getElementById('books');
+        booksContainer.innerHTML = filteredBooks.map(book => `
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card h-100">
+                    <img src="http://localhost:8030/book/images/${book.bookId}" 
+                         class="card-img-top" 
+                         alt="${book.title}"
+                         style="height: 200px; object-fit: cover;">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">${book.title}</h5>
+                        <div class="book-meta">
+                            <i class="fas fa-user"></i>
+                            <span>${book.author}</span>
+                        </div>
+                        <div class="category-badge">Level ${book.level}</div>
+                        <div class="price-tag">₦${book.price}</div>
+                        <div class="stock-status ${book.quantity > 0 ? 'text-success' : 'text-danger'}">
+                            ${book.quantity > 0 ? 'In Stock' : 'Out of Stock'}
+                        </div>
+                        <button onclick="editBook('${book.bookId}')" 
+                                class="btn btn-warning add-to-cart-btn mt-auto">
+                            Edit
+                        </button>
+                        <button onclick="deleteBook('${book.bookId}')" 
+                                class="btn btn-danger add-to-cart-btn mt-auto">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    // Add event listeners for search and filter
+    searchInput?.addEventListener('input', filterAndDisplayBooks);
+    levelFilter?.addEventListener('change', filterAndDisplayBooks);
+
+    // Initial fetch and display
+    fetchAndDisplayBooks();
 }
 
 // Edit Book
@@ -589,32 +632,36 @@ document.getElementById('checkoutButton')?.addEventListener('click', async () =>
 }
 
 // Fetch and Display Orders (Admin Dashboard).
-if (window.location.pathname.endsWith('admin.html')) {
-    const fetchOrders = async () => {
-        try {
-            // First, let's add console logs to debug the API call
-            console.log('Fetching orders...');
-            const response = await fetch('http://localhost:8030/api/orders/all');
-            console.log('Response:', response);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const orders = await response.json();
-            console.log('Orders data:', orders);
+async function fetchOrders() {
+    try {
+        const response = await fetch('http://localhost:8030/api/orders/all');
+        const orders = await response.json();
 
-            const ordersContainer = document.getElementById('orders');
-            
-            // Check if orders is empty or undefined
-            if (!orders || orders.length === 0) {
-                ordersContainer.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="text-center py-4">
-                            <div class="text-muted">
-                                <i class="fas fa-inbox fa-3x mb-3"></i>
-                                <p>No orders found</p>
+        const ordersContainer = document.getElementById('orders');
+        ordersContainer.innerHTML = orders.map(order => `
+            <tr>
+                <td>
+                    <span class="fw-bold">#${order.orderId || order.id}</span>
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(order.username)}&background=random" 
+                            class="rounded-circle me-2" 
+                            width="32" 
+                            height="32">
+                        <div>
+                            <div class="fw-bold"> ${order.username}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="d-flex flex-column">
+                        ${order.books.map(book => `
+                            <div class="mb-1">
+                                <span class="fw-bold">${book.title}</span>
+                                <span class="text-muted">× ${book.quantity}</span>
                             </div>
+<<<<<<< HEAD
                         </td>
                     </tr>`;
                 return;
@@ -712,53 +759,108 @@ if (window.location.pathname.endsWith('admin.html')) {
                             <p>Failed to load orders. Please try again later.</p>
                             <button class="btn btn-primary btn-sm mt-2" onclick="fetchOrders()">
                                 <i class="fas fa-sync-alt me-1"></i> Retry
+=======
+                        `).join('')}
+                    </div>
+                </td>
+                <td>
+                    <span class="fw-bold text-primary">₦${parseFloat(order.totalPrice).toLocaleString()}</span>
+                </td>
+                <td>
+                    <div class="d-flex flex-column">
+                        <span>${new Date(order.createdAt).toLocaleDateString()}</span>
+                        <small class="text-muted">${new Date(order.createdAt).toLocaleTimeString()}</small>
+                    </div>
+                </td>
+                <td>
+                    ${getStatusBadge(order.status)}
+                </td>
+                <td>
+                    <div class="btn-group">
+                        ${!order.status ? `
+                            <button class="btn btn-sm btn-success me-1" 
+                                    onclick="updateOrderStatus('${order.orderId || order.id}', 'approved')"
+                                    title="Approve Order">
+                                <i class="fas fa-check"></i>
+>>>>>>> b23c69aee82df51e55d0a49896eb10e12a2d4b93
                             </button>
-                        </div>
-                    </td>
-                </tr>`;
+                            <button class="btn btn-sm btn-danger me-1" 
+                                    onclick="updateOrderStatus('${order.orderId || order.id}', 'denied')"
+                                    title="Deny Order">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        ` : `
+                            <button class="btn btn-sm btn-${order.status === 'approved' ? 'success' : 'danger'}" disabled>
+                                <i class="fas fa-${order.status === 'approved' ? 'check-circle' : 'times-circle'}"></i>
+                                ${order.status === 'approved' ? 'Approved' : 'Denied'}
+                            </button>
+                        `}
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+
+        // Initialize DataTable with proper configuration
+        if ($.fn.DataTable.isDataTable('#ordersTable')) {
+            $('#ordersTable').DataTable().destroy();
         }
-    };
 
-    // Helper function for status badges
-    function getStatusBadge(status) {
-        const badges = {
-            'approved': '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Approved</span>',
-            'denied': '<span class="badge bg-danger"><i class="fas fa-times-circle"></i> Denied</span>',
-            'pending': '<span class="badge bg-warning"><i class="fas fa-clock"></i> Pending</span>'
-        };
-        return badges[status?.toLowerCase()] || '<span class="badge bg-secondary"><i class="fas fa-hourglass-half"></i> Processing</span>';
+        $('#ordersTable').DataTable({
+            pageLength: 10,
+            order: [[4, 'desc']], // Sort by date column descending
+            responsive: true,
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'collection',
+                    text: '<i class="fas fa-download"></i> Export',
+                    buttons: ['copy', 'excel', 'pdf', 'print']
+                }
+            ]
+        });
+
+    } catch (err) {
+        console.error('Error fetching orders:', err);
+        const ordersContainer = document.getElementById('orders');
+        ordersContainer.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center py-4">
+                    <div class="text-danger">
+                        <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
+                        <p>Failed to load orders. Please try again later.</p>
+                        <button class="btn btn-primary btn-sm mt-2" onclick="fetchOrders()">
+                            <i class="fas fa-sync-alt me-1"></i> Retry
+                        </button>
+                    </div>
+                </td>
+            </tr>`;
     }
-
-    // Call fetchOrders when the page loads
-    fetchOrders();
-
-    // Add event listeners for filters
-    document.getElementById('statusFilter').addEventListener('change', function() {
-        const table = $('#ordersTable').DataTable();
-        table.draw();
-    });
-
-    document.getElementById('dateFilter').addEventListener('change', function() {
-        const table = $('#ordersTable').DataTable();
-        table.draw();
-    });
-
-    document.getElementById('orderSearch').addEventListener('keyup', function() {
-        const table = $('#ordersTable').DataTable();
-        table.search(this.value).draw();
-    });
 }
 
+// Helper function for status badges
+function getStatusBadge(status) {
+    const badges = {
+        'approved': '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Approved</span>',
+        'denied': '<span class="badge bg-danger"><i class="fas fa-times-circle"></i> Denied</span>',
+        'pending': '<span class="badge bg-warning"><i class="fas fa-clock"></i> Pending</span>'
+    };
+    return badges[status?.toLowerCase()] || '<span class="badge bg-secondary"><i class="fas fa-hourglass-half"></i> Processing</span>';
+}
+
+// Call fetchOrders when the page loads
+if (window.location.pathname.endsWith('admin.html')) {
+    fetchOrders();
+}
 
 // Add this function after the fetchOrders function
-const updateOrderStatus = async (orderId, status) => {
+async function updateOrderStatus(orderId, status) {
     try {
         const response = await fetch(`http://localhost:8030/api/orders/updateStatus/${orderId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ status })
+            body: JSON.stringify({ status }),
         });
 
         if (response.ok) {
@@ -795,7 +897,7 @@ const updateOrderStatus = async (orderId, status) => {
         console.error('Error updating order status:', error);
         alert('Failed to update order status. Please try again.');
     }
-};
+}
 // Fetch and Display Order History
 const fetchOrderHistory = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -1385,4 +1487,27 @@ const selectChat = (userId, userName, event) => {
         event.currentTarget.classList.add('active');
     }
 };
+
+async function updateBookStatistics() {
+    try {
+        const response = await fetch('http://localhost:8030/book/allBooks');
+        const books = await response.json();
+        const totalBooks = books.profile.length;
+        const availableBooks = books.profile.filter(book => book.availability === 'yes').length;
+        const outOfStock = books.profile.filter(book => book.availability === 'no').length;
+        const categories = new Set(books.profile.map(book => book.level)).size;
+
+        document.getElementById('totalBooks').textContent = totalBooks;
+        document.getElementById('availableBooks').textContent = availableBooks;
+        document.getElementById('outOfStock').textContent = outOfStock;
+        document.getElementById('categories').textContent = categories;
+    } catch (error) {
+        console.error('Error fetching book statistics:', error);
+    }
+}
+
+// Call the function when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    updateBookStatistics();
+});
 
