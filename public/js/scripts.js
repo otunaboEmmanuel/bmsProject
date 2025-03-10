@@ -212,6 +212,7 @@ if (window.location.pathname.endsWith('admin-books.html')) {
             }
 
             const booksContainer = document.getElementById('books');
+            booksContainer.innerHTML = ''; // Clear previous content
 
             books.profile.forEach((book) => {
                 const imageUrl = `http://localhost:8030/book/images/${book.bookId}`;
@@ -241,7 +242,6 @@ if (window.location.pathname.endsWith('admin-books.html')) {
     };
 
     fetchBooks();
-
 }
 
 // Edit Book
@@ -1086,7 +1086,7 @@ const fetchChatList = async () => {
                 .sort((a, b) => new Date(b[1].lastMessage) - new Date(a[1].lastMessage))
                 .map(([userId, data]) => `
                     <div class="chat-list-item list-group-item list-group-item-action ${currentSelectedUser === userId ? 'active' : ''}"
-                         onclick="selectChat('${userId}', '${data.userName}')">
+                         onclick="selectChat('${userId}', '${data.userName}', event)">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <span class="user-status ${data.messages.length > 0 ? 'status-online' : 'status-offline'}"></span>
@@ -1106,48 +1106,10 @@ const fetchChatList = async () => {
     }
 };
 
-// const selectChat = (userId, userName) => {
-//     currentSelectedUser = userId;
-//     document.getElementById('currentChatUser').textContent = userName;
-//     fetchMessages(userId);
-    
-//     // Update active state in chat list
-//     document.querySelectorAll('.chat-list-item').forEach(item => {
-//         item.classList.remove('active');
-//     });
-//     event.currentTarget.classList.add('active');
-// };
+// Removed duplicate selectChat function
 
 // Add admin reply form handler
-document.getElementById('adminReplyForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!currentSelectedUser) {
-        alert('Please select a conversation first');
-        return;
-    }
-
-    const message = document.getElementById('replyMessage').value;
-    try {
-        const response = await fetch('http://localhost:8030/messages/reply', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                userId: currentSelectedUser,
-                message,
-                isAdminMessage: true
-            }),
-        });
-
-        if (response.ok) {
-            document.getElementById('replyMessage').value = '';
-            fetchMessages(currentSelectedUser);
-        }
-    } catch (error) {
-        console.error('Error sending reply:', error);
-    }
-});
+// Removed duplicate declaration of adminReplyForm
 
 // Initialize admin chat
 if (window.location.pathname.endsWith('admin-chat.html')) {
@@ -1327,61 +1289,64 @@ const updateChatList = async (userId, userName) => {
 };
 
 // Update the admin reply form handler
-document.getElementById('adminReplyForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!currentSelectedUser) {
-        alert('Please select a conversation first');
-        return;
-    }
-
-    const message = document.getElementById('replyMessage').value.trim();
-    if (!message) return;
-
-    try {
-        const response = await fetch('http://localhost:8030/messages/reply', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                userId: currentSelectedUser,
-                message,
-                isAdminMessage: true
-            }),
-        });
-
-        if (response.ok) {
-            // Clear input
-            document.getElementById('replyMessage').value = '';
-            
-            // Add message to UI immediately
-            const messagesContainer = document.getElementById('messagesContainer');
-            const newMessage = `
-                <div class="chat-message sent">
-                    <div class="message-content">
-                        ${message}
-                    </div>
-                    <div class="message-time">
-                        You • ${new Date().toLocaleString()}
-                    </div>
-                </div>
-            `;
-            messagesContainer.insertAdjacentHTML('beforeend', newMessage);
-            
-            // Scroll to bottom
-            const chatContainer = document.getElementById('chat-container');
-            if (chatContainer) {
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            }
-
-            // Refresh chat list to update last message
-            fetchChatList();
+const adminReplyForm = document.getElementById('adminReplyForm');
+if (adminReplyForm) {
+    adminReplyForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentSelectedUser) {
+            alert('Please select a conversation first');
+            return;
         }
-    } catch (error) {
-        console.error('Error sending reply:', error);
-        alert('Failed to send message. Please try again.');
-    }
-});
+
+        const message = document.getElementById('replyMessage').value.trim();
+        if (!message) return;
+
+        try {
+            const response = await fetch('http://localhost:8030/messages/reply', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: currentSelectedUser,
+                    message,
+                    isAdminMessage: true
+                }),
+            });
+
+            if (response.ok) {
+                // Clear input
+                document.getElementById('replyMessage').value = '';
+                
+                // Add message to UI immediately
+                const messagesContainer = document.getElementById('messagesContainer');
+                const newMessage = `
+                    <div class="chat-message sent">
+                        <div class="message-content">
+                            ${message}
+                        </div>
+                        <div class="message-time">
+                            You • ${new Date().toLocaleString()}
+                        </div>
+                    </div>
+                `;
+                messagesContainer.insertAdjacentHTML('beforeend', newMessage);
+                
+                // Scroll to bottom
+                const chatContainer = document.getElementById('chat-container');
+                if (chatContainer) {
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+
+                // Refresh chat list to update last message
+                fetchChatList();
+            }
+        } catch (error) {
+            console.error('Error sending reply:', error);
+            alert('Failed to send message. Please try again.');
+        }
+    }, { once: true }); // Ensure the event listener is only attached once
+}
 
 // Initialize the new message modal when on admin chat page
 if (window.location.pathname.endsWith('admin-chat.html')) {
@@ -1389,7 +1354,7 @@ if (window.location.pathname.endsWith('admin-chat.html')) {
 }
 
 // Update the existing selectChat function to handle new conversations
-const selectChat = (userId, userName) => {
+const selectChat = (userId, userName, event) => {
     currentSelectedUser = userId;
     const userHeader = document.getElementById('currentChatUser');
     if (userHeader) {
@@ -1409,10 +1374,8 @@ const selectChat = (userId, userName) => {
     document.querySelectorAll('.chat-list-item').forEach(item => {
         item.classList.remove('active');
     });
-    const currentItem = Array.from(document.querySelectorAll('.chat-list-item'))
-        .find(item => item.getAttribute('onclick').includes(userId));
-    if (currentItem) {
-        currentItem.classList.add('active');
+    if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active');
     }
 };
 
