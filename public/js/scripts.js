@@ -639,7 +639,7 @@ async function fetchOrders() {
 
         const ordersContainer = document.getElementById('orders');
         ordersContainer.innerHTML = orders.map(order => `
-            <tr>
+            <tr data-order-id="${order.orderId || order.id}">
                 <td>
                     <span class="fw-bold">#${order.orderId || order.id}</span>
                 </td>
@@ -788,8 +788,20 @@ async function updateOrderStatus(orderId, status) {
                 alert.remove();
             }, 3000);
 
-            // Refresh the orders list
-            fetchOrders();
+            // Update the order status in the DOM
+            const orderRow = document.querySelector(`tr[data-order-id="${orderId}"]`);
+            if (orderRow) {
+                const statusCell = orderRow.querySelector('td:nth-child(6)');
+                const actionsCell = orderRow.querySelector('td:nth-child(7)');
+                statusCell.innerHTML = getStatusBadge(status);
+                actionsCell.innerHTML = `
+                    <button class="btn btn-sm btn-${status === 'approved' ? 'success' : 'danger'}" disabled>
+                        <i class="fas fa-${status === 'approved' ? 'check-circle' : 'times-circle'}"></i>
+                        ${status === 'approved' ? 'Approved' : 'Denied'}
+                    </button>
+                `;
+            }
+
         } else {
             throw new Error('Failed to update order status');
         }
@@ -1407,7 +1419,7 @@ async function updateBookStatistics() {
 }
 
 // Call the function when the page loads
+// Call the function when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     updateBookStatistics();
 });
-
