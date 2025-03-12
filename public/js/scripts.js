@@ -821,40 +821,94 @@ const fetchOrderHistory = async () => {
     }
 
     try {
-        const response = await fetch(`http://localhost:8030/api/orders/${userId}`); // Replace with your API endpoint
+        const response = await fetch(`http://localhost:8030/api/orders/${userId}`);
         const orders = await response.json();
 
         const ordersContainer = document.getElementById('orders');
+        
+        // Update stats
+        let totalBooks = 0;
+        let totalSpent = 0;
+        
         if (orders.length === 0) {
-            ordersContainer.innerHTML = '<p>No orders found.</p>';
+            ordersContainer.innerHTML = `
+                <div class="empty-orders">
+                    <i class="fas fa-shopping-cart"></i>
+                    <h4>No Orders Yet</h4>
+                    <p class="text-muted">Your order history will appear here</p>
+                    <a href="student.html" class="btn btn-primary mt-3">Start Shopping</a>
+                </div>`;
             return;
         }
 
-        console.log(orders);
-        
+        orders.forEach(order => {
+            totalBooks += order.books.reduce((acc, book) => acc + book.quantity, 0);
+            totalSpent += parseFloat(order.totalPrice);
+        });
+
+        // Log the calculated values
+        console.log('Total Books:', totalBooks);
+        console.log('Total Spent:', totalSpent);
+
+        // Update stats display
+        document.getElementById('totalOrders').textContent = orders.length;
+        document.getElementById('totalBooks').textContent = totalBooks;
+        document.getElementById('totalSpent').textContent = `₦${totalSpent.toLocaleString()}`;
 
         ordersContainer.innerHTML = orders.map(order => `
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">Order ID: ${order.id}</h5>
-                    <p class="card-text"><strong>Books:</strong></p>
-                    <ul>
+            <div class="order-card">
+                <div class="order-header">
+                    <span>Order #${order.id}</span>
+                    <span class="order-status ${getStatusClass(order.status)}">
+                        ${order.status || 'Processing'}
+                    </span>
+                </div>
+                <div class="order-body">
+                    <ul class="book-list">
                         ${order.books.map(book => `
-                            <li>${book.title} (Quantity: ${book.quantity})</li>
+                            <li class="book-item">
+                                <span>${book.title}</span>
+                                <span class="book-quantity">×${book.quantity}</span>
+                            </li>
                         `).join('')}
                     </ul>
-                    <p class="card-text"><strong>Total Price:</strong> ₦${order.totalPrice}</p>
-                    <p class="card-text"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+                </div>
+                <div class="order-footer">
+                    <div class="order-date">
+                        <i class="far fa-calendar-alt me-2"></i>
+                        ${new Date(order.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}
+                    </div>
+                    <div class="total-price">₦${parseFloat(order.totalPrice).toLocaleString()}</div>
                 </div>
             </div>
         `).join('');
     } catch (err) {
         console.error('Error fetching order history:', err);
-        document.getElementById('orders').innerHTML = '<p>Failed to load order history.</p>';
+        document.getElementById('orders').innerHTML = `
+            <div class="empty-orders">
+                <i class="fas fa-exclamation-circle text-danger"></i>
+                <h4>Error Loading Orders</h4>
+                <p class="text-muted">Please try again later</p>
+            </div>`;
     }
 };
 
-// Call the function to fetch and display order history
+function getStatusClass(status) {
+    if (!status) return 'status-pending';
+    switch(status.toLowerCase()) {
+        case 'approved': return 'status-approved';
+        case 'denied': return 'status-denied';
+        default: return 'status-pending';
+    }
+}
+
+// Call the function when the page loads
 if (window.location.pathname.endsWith('order-history.html')) {
     fetchOrderHistory();
 }
@@ -1096,6 +1150,13 @@ const fetchChatList = async () => {
                 userMessages[msg.userId].messages.push(msg);
                 if (new Date(msg.timestamp) > new Date(userMessages[msg.userId].lastMessage)) {
                     userMessages[msg.userId].lastMessage = msg.timestamp;
+                }                function getStatusBadge(status) {
+                    const badges = {
+                        'approved': '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Approved</span>',
+                        'denied': '<span class="badge bg-danger"><i class="fas fa-times-circle"></i> Denied</span>',
+                        'pending': '<span class="badge bg-warning"><i class="fas fa-clock"></i> Pending</span>'
+                    };
+                    return badges[status?.toLowerCase()] || '<span class="badge bg-secondary"><i class="fas fa-hourglass-half"></i> Processing</span>';
                 }
             }
         });
