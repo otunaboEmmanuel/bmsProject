@@ -4,6 +4,7 @@ import com.example.bmsproject.dto.BookOrderDto;
 import com.example.bmsproject.dto.BookOrderStudentDto;
 import com.example.bmsproject.entities.BookOrder;
 import com.example.bmsproject.repository.OrderRepository;
+import com.example.bmsproject.responses.Responses;
 import com.example.bmsproject.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,15 +25,21 @@ public class OrderController {
     private OrderRepository orderRepository;
 
 
-    @GetMapping("/{studentId}")
-    public ResponseEntity<List<BookOrderDto>> getOrdersByStudent(@PathVariable Integer studentId) {
-        //List<BookOrder> orders = orderService.getOrdersByStudent(studentId);
-        List<BookOrder> orders = orderRepository.findAllByStatus("approved");
+
+@GetMapping("/{studentId}")
+public ResponseEntity<?> getOrdersByStudent(@PathVariable Integer studentId) {
+    List<BookOrder> orders = orderRepository.findAllByStudentIdAndStatus(studentId, "approved");
+
+    if (!orders.isEmpty()) {
         List<BookOrderDto> orderDTOs = orders.stream()
-                .map(BookOrderDto::new) // This should now work
+                .map(BookOrderDto::new)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(orderDTOs);
+    } else {
+        return new ResponseEntity<>(new Responses("100", "No orders found for this student"), HttpStatus.OK);
     }
+}
+
 
 
     // Checkout (Create an order from cart)

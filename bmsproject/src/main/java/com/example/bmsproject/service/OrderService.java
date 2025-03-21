@@ -21,6 +21,7 @@ public class OrderService {
     private OrderRepository orderRepository;
     @Autowired
     private OrderItemRepository orderItemRepository;
+
     public BookOrder checkout(Integer userId) {
         Users user = userRepository.findById(userId).orElse(null);
         if (user == null) {
@@ -53,22 +54,25 @@ public class OrderService {
 
         return order;
     }
+
     // Fetch all orders
     public List<BookOrder> getAllOrders() {
         return orderRepository.findAll();
     }
-    public List<BookOrder> getOrdersByStudent(Integer studentId) {
+
+    //    public List<BookOrder> getOrdersByStudent(Integer studentId) {
+//        Users student = userRepository.findById(studentId)
+//                .orElseThrow(() -> new RuntimeException("Student not found"));
+//        return orderRepository.findByStudent(student);
+//    }
+    public List<BookOrderDto> getOrdersByStudent(Integer studentId) {
         Users student = userRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
-        return orderRepository.findByStudent(student);
+                .orElseThrow(() -> new RuntimeException("Student not found with ID: " + studentId));
+
+        return orderRepository.findByStudent(student).stream()
+                .map(BookOrderDto::new)
+                .collect(Collectors.toList());
+
+
     }
-//public List<BookOrderDto> getOrdersByStudent(Integer studentId) {
-//    Users student = userRepository.findById(studentId)
-//            .orElseThrow(() -> new RuntimeException("Student not found with ID: " + studentId));
-//
-//    return orderRepository.findByStudent(student).stream()
-//            .map(BookOrderDto::new)
-//            .collect(Collectors.toList());
-
-
 }
