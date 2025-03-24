@@ -827,7 +827,7 @@ const fetchOrderHistory = async () => {
         const ordersContainer = document.getElementById('orders');
         
         // Update stats
-        let totalBooks = 0;
+        let totalBookss = 0;
         let totalSpent = 0;
         
         if (orders.length === 0) {
@@ -842,17 +842,18 @@ const fetchOrderHistory = async () => {
         }
 
         orders.forEach(order => {
-            totalBooks += order.books.reduce((acc, book) => acc + book.quantity, 0);
+            totalBookss += order.books.reduce((acc, book) => acc + book.quantity, 0);
             totalSpent += parseFloat(order.totalPrice);
         });
 
         // Log the calculated values
-        console.log('Total Books:', totalBooks);
+        console.log('Total Books:', totalBookss);
         console.log('Total Spent:', totalSpent);
+        const total = localStorage.getItem("Total Books") ;
 
         // Update stats display
         document.getElementById('totalOrders').textContent = orders.length;
-        document.getElementById('totalBooks').textContent = totalBooks;
+         document.getElementById('totalBookss').textContent = totalBookss;
         document.getElementById('totalSpent').textContent = `₦${totalSpent.toLocaleString()}`;
 
         ordersContainer.innerHTML = orders.map(order => `
@@ -1471,7 +1472,7 @@ async function updateBookStatistics() {
         const outOfStock = books.profile.filter(book => book.availability === 'no').length;
         const categories = new Set(books.profile.map(book => book.level)).size;
 
-        document.getElementById('totalBooks').textContent = totalBooks;
+         document.getElementById('totalBooks').textContent = totalBooks;
         document.getElementById('availableBooks').textContent = availableBooks;
         document.getElementById('outOfStock').textContent = outOfStock;
         document.getElementById('categories').textContent = categories;
