@@ -22,17 +22,19 @@ public class Messages {
 
     private String content;
 
-    private boolean isAdminMessage;
+    @Column(name = "is_admin_message")  // Explicitly map column name
+    private boolean adminMessage;
+
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date timestamp=new Date();
 
-    public Messages(Integer id, Users user, String content, boolean isAdminMessage, Date timestamp) {
+    public Messages(Integer id, Users user, String content, boolean adminMessage, Date timestamp) {
         this.id = id;
         this.user = user;
         this.content = content;
-        this.isAdminMessage = isAdminMessage;
-        this.timestamp = new Date();
+        this.adminMessage = adminMessage;
+        this.timestamp = timestamp;
     }
 
 

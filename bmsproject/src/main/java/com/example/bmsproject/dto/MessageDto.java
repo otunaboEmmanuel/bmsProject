@@ -19,6 +19,7 @@ public class MessageDto {
         this.id = Long.valueOf(message.getId());
         this.userId = message.getUser().getId();
         this.userName = message.getUser().getUserName();
+
         this.message = message.getContent();
         this.isAdminMessage = message.isAdminMessage();
         this.timestamp = message.getTimestamp();
