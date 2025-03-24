@@ -859,8 +859,8 @@ const fetchOrderHistory = async () => {
             <div class="order-card">
                 <div class="order-header">
                     <span>Order #${order.id}</span>
-                    <span class="order-status ${getStatusClass(order.status)}">
-                        ${order.status || 'Processing'}
+                    <span class="order-status status-approved ${getStatusClass(order.status)}">
+                        ${order.status || 'Approved'}
                     </span>
                 </div>
                 <div class="order-body">
@@ -1021,7 +1021,7 @@ document.getElementById('messageForm')?.addEventListener('submit', async (e) => 
             body: JSON.stringify({
                 userId,
                 message,
-                isAdminMessage: false
+                adminMessage: false
             }),
         });
 
@@ -1043,6 +1043,7 @@ const fetchMessages = async (userId = null) => {
     if (window.location.pathname.endsWith('admin-chat.html') && !userId) {
         return;
     }
+    const userName =localStorage.getItem('username')
 
     try {
         const endpoint = userId 
@@ -1055,12 +1056,12 @@ const fetchMessages = async (userId = null) => {
         const messagesContainer = document.getElementById('messagesContainer');
         if (messagesContainer) {
             messagesContainer.innerHTML = messages.map(msg => `
-                <div class="chat-message ${msg.isAdminMessage ? 'sent' : 'received'}">
+                <div class="chat-message ${msg.adminMessage ? 'sent' : 'received'}">
                     <div class="message-content">
                         ${msg.message}
                     </div>
                     <div class="message-time">
-                        ${msg.isAdminMessage ? 'You' : msg.userName} • ${new Date(msg.timestamp).toLocaleString()}
+                        ${msg.adminMessage ? 'Admin': msg.userName} • ${new Date(msg.timestamp).toLocaleString()}
                     </div>
                 </div>
             `).join('');
@@ -1089,7 +1090,7 @@ const replyToMessage = async (messageId, studentId) => {
             body: JSON.stringify({
                 userId: studentId,
                 message: replyContent,
-                isAdminMessage: true
+                adminMessage: true
             }),
         });
 
@@ -1139,7 +1140,7 @@ const fetchChatList = async () => {
         // Group messages by user
         const userMessages = {};
         messages.forEach(msg => {
-            if (!msg.isAdminMessage) {
+            if (!msg.adminMessage) {
                 if (!userMessages[msg.userId]) {
                     userMessages[msg.userId] = {
                         userName: msg.userName,
@@ -1392,7 +1393,7 @@ if (adminReplyForm) {
                 body: JSON.stringify({
                     userId: currentSelectedUser,
                     message,
-                    isAdminMessage: true
+                    adminMessage: true
                 }),
             });
 
