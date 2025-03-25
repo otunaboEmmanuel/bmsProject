@@ -1,34 +1,73 @@
+// document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+//     e.preventDefault();
+//     const email = document.getElementById('email').value;
+//     const password = document.getElementById('password').value;
+
+//     const response = await fetch('http://localhost:8030/students/login', { //login route
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify({ email, password }),
+//     });
+
+//     const data = await response.json();
+//     //userId =data.id;
+//     console.log(data);
+
+//     if (response.ok) {
+//         localStorage.setItem('userId', JSON.stringify(data.id)); 
+//         localStorage.setItem('user', JSON.stringify(data.role)); 
+//         localStorage.setItem('username', data.userName); 
+//         window.location.href = data.role.toLowerCase() === 'admin' ? 'admin.html' : 'student.html';
+//     } else {
+//         const errorMessage = document.getElementById('errorMessage');
+//         errorMessage.textContent = 'Incorrect email or password';
+//         errorMessage.style.display = 'block';
+    
+//         document.getElementById('loginForm').classList.add('shake');
+//         setTimeout(() => {
+//             document.getElementById('loginForm').classList.remove('shake');
+//         }, 1000);
+//     }
+    
+// });
+
 document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
 
     const response = await fetch('http://localhost:8030/students/login', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
     });
 
-    const data = await response.json();
-    console.log(data);
+    let data;
+    try {
+        data = await response.json(); // Ensure JSON parsing
+    } catch (error) {
+        console.error('Failed to parse JSON:', error);
+        data = {}; // Default to an empty object
+    }
 
-    if (response.ok) {
-        localStorage.setItem('userId', JSON.stringify(data.id)); // Save user ID
-        localStorage.setItem('user', JSON.stringify(data.role)); // Save user role
-        localStorage.setItem('username', data.userName); // Store username
+    console.log('API Response:', data);
+
+    if (response.ok && data && data.role) {
+        localStorage.setItem('userId', JSON.stringify(data.id)); 
+        localStorage.setItem('user', JSON.stringify(data.role)); 
+        localStorage.setItem('username', data.userName); 
         window.location.href = data.role.toLowerCase() === 'admin' ? 'admin.html' : 'student.html';
     } else {
+        console.error('Invalid API response:', data);
         const errorMessage = document.getElementById('errorMessage');
         errorMessage.textContent = 'Incorrect email or password';
         errorMessage.style.display = 'block';
-        document.getElementById('loginForm').classList.add('shake');
-        setTimeout(() => {
-            document.getElementById('loginForm').classList.remove('shake');
-        }, 1000);
     }
 });
+
 
 
 // Registration Form Submission
@@ -825,7 +864,7 @@ const fetchOrderHistory = async () => {
         const ordersContainer = document.getElementById('orders');
         
         // Update stats
-        let totalBooks = 0;
+        let totalBookss = 0;
         let totalSpent = 0;
         
         if (orders.length === 0) {
@@ -840,25 +879,26 @@ const fetchOrderHistory = async () => {
         }
 
         orders.forEach(order => {
-            totalBooks += order.books.reduce((acc, book) => acc + book.quantity, 0);
+            totalBookss += order.books.reduce((acc, book) => acc + book.quantity, 0);
             totalSpent += parseFloat(order.totalPrice);
         });
 
         // Log the calculated values
-        console.log('Total Books:', totalBooks);
+        console.log('Total Books:', totalBookss);
         console.log('Total Spent:', totalSpent);
+        const total = localStorage.getItem("Total Books") ;
 
         // Update stats display
         document.getElementById('totalOrders').textContent = orders.length;
-        document.getElementById('totalBooks').textContent = totalBooks;
+         document.getElementById('totalBookss').textContent = totalBookss;
         document.getElementById('totalSpent').textContent = `₦${totalSpent.toLocaleString()}`;
 
         ordersContainer.innerHTML = orders.map(order => `
             <div class="order-card">
                 <div class="order-header">
                     <span>Order #${order.id}</span>
-                    <span class="order-status ${getStatusClass(order.status)}">
-                        ${order.status || 'Processing'}
+                    <span class="order-status status-approved ${getStatusClass(order.status)}">
+                        ${order.status || 'Approved'}
                     </span>
                 </div>
                 <div class="order-body">
@@ -1017,7 +1057,7 @@ document.getElementById('messageForm')?.addEventListener('submit', async (e) => 
             body: JSON.stringify({
                 userId,
                 message,
-                isAdminMessage: false
+                adminMessage: false
             }),
         });
 
@@ -1039,6 +1079,7 @@ const fetchMessages = async (userId = null) => {
     if (window.location.pathname.endsWith('admin-chat.html') && !userId) {
         return;
     }
+    const userName =localStorage.getItem('username')
 
     try {
         const endpoint = userId 
@@ -1051,12 +1092,12 @@ const fetchMessages = async (userId = null) => {
         const messagesContainer = document.getElementById('messagesContainer');
         if (messagesContainer) {
             messagesContainer.innerHTML = messages.map(msg => `
-                <div class="chat-message ${msg.isAdminMessage ? 'sent' : 'received'}">
+                <div class="chat-message ${msg.adminMessage ? 'sent' : 'received'}">
                     <div class="message-content">
                         ${msg.message}
                     </div>
                     <div class="message-time">
-                        ${msg.isAdminMessage ? 'You' : msg.userName} • ${new Date(msg.timestamp).toLocaleString()}
+                        ${msg.adminMessage ? 'Admin': msg.userName} • ${new Date(msg.timestamp).toLocaleString()}
                     </div>
                 </div>
             `).join('');
@@ -1085,7 +1126,7 @@ const replyToMessage = async (messageId, studentId) => {
             body: JSON.stringify({
                 userId: studentId,
                 message: replyContent,
-                isAdminMessage: true
+                adminMessage: true
             }),
         });
 
@@ -1135,7 +1176,7 @@ const fetchChatList = async () => {
         // Group messages by user
         const userMessages = {};
         messages.forEach(msg => {
-            if (!msg.isAdminMessage) {
+            if (!msg.adminMessage) {
                 if (!userMessages[msg.userId]) {
                     userMessages[msg.userId] = {
                         userName: msg.userName,
@@ -1388,7 +1429,7 @@ if (adminReplyForm) {
                 body: JSON.stringify({
                     userId: currentSelectedUser,
                     message,
-                    isAdminMessage: true
+                    adminMessage: true
                 }),
             });
 
@@ -1466,7 +1507,7 @@ async function updateBookStatistics() {
         const outOfStock = books.profile.filter(book => book.availability === 'no').length;
         const categories = new Set(books.profile.map(book => book.level)).size;
 
-        document.getElementById('totalBooks').textContent = totalBooks;
+         document.getElementById('totalBooks').textContent = totalBooks;
         document.getElementById('availableBooks').textContent = availableBooks;
         document.getElementById('outOfStock').textContent = outOfStock;
         document.getElementById('categories').textContent = categories;
