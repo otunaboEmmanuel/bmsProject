@@ -1,36 +1,73 @@
+// document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+//     e.preventDefault();
+//     const email = document.getElementById('email').value;
+//     const password = document.getElementById('password').value;
+
+//     const response = await fetch('http://localhost:8030/students/login', { //login route
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify({ email, password }),
+//     });
+
+//     const data = await response.json();
+//     //userId =data.id;
+//     console.log(data);
+
+//     if (response.ok) {
+//         localStorage.setItem('userId', JSON.stringify(data.id)); 
+//         localStorage.setItem('user', JSON.stringify(data.role)); 
+//         localStorage.setItem('username', data.userName); 
+//         window.location.href = data.role.toLowerCase() === 'admin' ? 'admin.html' : 'student.html';
+//     } else {
+//         const errorMessage = document.getElementById('errorMessage');
+//         errorMessage.textContent = 'Incorrect email or password';
+//         errorMessage.style.display = 'block';
+    
+//         document.getElementById('loginForm').classList.add('shake');
+//         setTimeout(() => {
+//             document.getElementById('loginForm').classList.remove('shake');
+//         }, 1000);
+//     }
+    
+// });
+
 document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
 
-    const response = await fetch('http://localhost:8030/students/login', { //login route
+    const response = await fetch('http://localhost:8030/students/login', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
     });
 
-    const data = await response.json();
-    //userId =data.id;
-    console.log(data);
+    let data;
+    try {
+        data = await response.json(); // Ensure JSON parsing
+    } catch (error) {
+        console.error('Failed to parse JSON:', error);
+        data = {}; // Default to an empty object
+    }
 
-    if (response.ok) {
-        localStorage.setItem('userId', JSON.stringify(data.id)); // Save user data
-        localStorage.setItem('user', JSON.stringify(data.role)); // Save user data
-        localStorage.setItem('username', data.userName); // Store username
+    console.log('API Response:', data);
+
+    if (response.ok && data && data.role) {
+        localStorage.setItem('userId', JSON.stringify(data.id)); 
+        localStorage.setItem('user', JSON.stringify(data.role)); 
+        localStorage.setItem('username', data.userName); 
         window.location.href = data.role.toLowerCase() === 'admin' ? 'admin.html' : 'student.html';
     } else {
-        // Show a more specific error message
+        console.error('Invalid API response:', data);
         const errorMessage = document.getElementById('errorMessage');
         errorMessage.textContent = 'Incorrect email or password';
         errorMessage.style.display = 'block';
-        document.getElementById('loginForm').classList.add('shake');
-        setTimeout(() => {
-            document.getElementById('loginForm').classList.remove('shake');
-        }, 1000);
     }
 });
+
 
 
 // Registration Form Submission

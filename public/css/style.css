@@ -2276,6 +2276,16 @@ textarea.form-control {
   width: 100%;
 }
 
+#errorMessage {
+  color: red;
+  text-align: center;
+  padding: 7px ;
+  background-color: rgb(255, 235, 235);
+  display: none; /* Initially hidden */
+  border-radius: 5px;
+}
+
+
 @media (min-width: 576px) {
   .form-inline label {
     display: flex;
